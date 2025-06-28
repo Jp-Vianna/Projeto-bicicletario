@@ -1,0 +1,60 @@
+package com.es2.bicicletario.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Data
+@NoArgsConstructor 
+@AllArgsConstructor 
+public class Ciclista {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
+
+    @Column(nullable = false, length = 100)
+    private String nomeCiclista;
+
+    @Embedded
+    @Column(unique = true, nullable = true)
+    private Cpf cpf;
+    
+    @Column(nullable = false)
+    private String senha;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Nacionalidade nacionalidade;
+    
+    @Column(nullable = false)
+    private String email;
+
+    @Column(name = "foto_documento", nullable = false)
+    private String fotoDocumento;
+
+    @Column(nullable = false)
+    private Boolean estrangeiro;
+
+    @Embedded
+    @Column(nullable = false)
+    private CartaoDeCredito cartao;
+
+    @Embedded
+    @Column(nullable = true)
+    private Passaporte passaporte;
+
+}
