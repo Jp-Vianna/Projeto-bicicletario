@@ -1,13 +1,14 @@
 package com.es2.bicicletario.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Entity
+@Table(name = "alugueis")
 @Data
 @NoArgsConstructor 
 @AllArgsConstructor 
@@ -16,26 +17,18 @@ public class Aluguel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idAluguel;
 
-    @Column(nullable = false)
-    private Integer idBicicleta;
+    @Column(nullable = false) 
+    private Integer idBicicleta;// Não integrado
 
     @Column(nullable = false)
-    private String horaInicio;
+    private LocalDateTime horaInicio;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ciclista_id", nullable = false)
+    private Ciclista ciclista;
 
     @Column(nullable = false)
-    private Integer idCiclista;
-
-    @Column(nullable = false)
-    private Integer trancaInicial;
-
-    @Column(nullable = true)
-    private Integer TrancaFinal;
-
-    @Column(nullable = true)
-    private String horaFim;
-
-    @Column(nullable = true)
-    private BigDecimal cobranca;
+    private Integer trancaInicial;// Não integrado
 
     @Enumerated(EnumType.STRING)
     private Status status;

@@ -8,11 +8,13 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "ciclistas")
 @Data
 @NoArgsConstructor 
 @AllArgsConstructor 
@@ -40,8 +42,9 @@ public class Ciclista {
     @Enumerated(EnumType.STRING)
     private Nacionalidade nacionalidade;
     
-    @Column(nullable = false)
-    private String email;
+    @Embedded
+    @Column(nullable = false, unique = true)
+    private Email email;
 
     @Column(name = "foto_documento", nullable = false)
     private String fotoDocumento;
