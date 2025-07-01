@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CiclistaDTO {
+public class CiclistaResponseDTO {
 
     private Integer id;
     private String nome;
@@ -29,14 +29,14 @@ public class CiclistaDTO {
      * @param ciclista A entidade a ser convertida.
      * @return O DTO preenchido com dados seguros.
      */
-    public static CiclistaDTO fromEntity(Ciclista ciclista) {
+    public static CiclistaResponseDTO fromEntity(Ciclista ciclista) {
 
         String cartaoCompleto = ciclista.getCartao().getNumeroCartao();
         String cartaoMascarado = "************" + cartaoCompleto.substring(cartaoCompleto.length() - 4);
 
         String numeroPassaporte = (ciclista.getPassaporte() != null) ? ciclista.getPassaporte().getNumeroPassaporte() : null;
 
-        return new CiclistaDTO(
+        return new CiclistaResponseDTO(
                 ciclista.getId(),
                 ciclista.getNomeCiclista(),
                 ciclista.getEmail().getEmail(), 

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FuncionarioDTO {
+public class FuncionarioResponseDTO {
 
     private String matricula;
     private String nome;
@@ -22,8 +22,8 @@ public class FuncionarioDTO {
      * @param funcionario A entidade a ser convertida.
      * @return O DTO preenchido com dados seguros para exposição.
      */
-    public static FuncionarioDTO fromEntity(Funcionario funcionario) {
-        return new FuncionarioDTO(
+    public static FuncionarioResponseDTO fromEntity(Funcionario funcionario) {
+        return new FuncionarioResponseDTO(
                 funcionario.getMatricula(),
                 funcionario.getNome(),
                 funcionario.getEmail().getEmail(), 

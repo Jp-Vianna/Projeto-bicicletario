@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DevolucaoDTO {
+public class DevolucaoResponseDTO {
 
     private Integer id;
     private Integer trancaFinal;
@@ -25,8 +25,8 @@ public class DevolucaoDTO {
      * @param devolucao A entidade Devolucao a ser convertida.
      * @return Um objeto DevolucaoDto preenchido.
      */
-    public static DevolucaoDTO fromEntity(Devolucao devolucao) {
-        return new DevolucaoDTO(
+    public static DevolucaoResponseDTO fromEntity(Devolucao devolucao) {
+        return new DevolucaoResponseDTO(
                 devolucao.getIdDevolucao(),
                 devolucao.getTrancaFinal(),
                 devolucao.getHoraFim(),

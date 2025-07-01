@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AluguelDTO {
+public class AluguelResponseDTO {
 
     private Integer id;
     private Integer idBicicleta;
@@ -27,8 +27,8 @@ public class AluguelDTO {
      * @param aluguel A entidade Aluguel a ser convertida.
      * @return Um objeto AluguelDto preenchido.
      */
-    public static AluguelDTO fromEntity(Aluguel aluguel) {
-        return new AluguelDTO(
+    public static AluguelResponseDTO fromEntity(Aluguel aluguel) {
+        return new AluguelResponseDTO(
                 aluguel.getIdAluguel(),
                 aluguel.getIdBicicleta(),
                 aluguel.getHoraInicio(),
