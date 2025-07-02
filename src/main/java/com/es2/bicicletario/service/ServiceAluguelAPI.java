@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,20 +18,16 @@ import com.es2.bicicletario.entity.*;
 import com.es2.bicicletario.repository.*;
 import com.es2.bicicletario.validation.RegraDeNegocioException;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ServiceAluguelAPI {
 
-    @Autowired
-    private FuncionarioRepository funcionarioRepository;
-
-    @Autowired
-    private DevolucaoRepository devolucaoRepository;
-
-    @Autowired
-    private AluguelRepository aluguelRepository;
-
-    @Autowired
-    private CiclistaRepository ciclistaRepository;
+    private final FuncionarioRepository funcionarioRepository;
+    private final DevolucaoRepository devolucaoRepository;
+    private final AluguelRepository aluguelRepository;
+    private final CiclistaRepository ciclistaRepository;
 
     /**
      * Cria um novo ciclista no sistema, aplicando validações de negócio.

@@ -24,7 +24,7 @@ public class CartaoDeCredito {
 
     public static boolean verificaCartao() { // Não integrado
         System.out.println("Cartão validado com sucesso.");
-
+        
         return true;
     }
 }
