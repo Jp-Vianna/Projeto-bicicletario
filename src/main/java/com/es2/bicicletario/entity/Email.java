@@ -20,13 +20,10 @@ public class Email implements Serializable {
             Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
 
     @Column(name = "email") 
-    private String email;
+    private String endereco;
 
     public Email(String endereco) {
-        if (!isValido(endereco)) {
-            throw new IllegalArgumentException("Formato de e-mail inválido: " + endereco);
-        }
-        this.email = endereco;
+        this.endereco = endereco;
     }
 
     public static boolean isValido(String email) {
@@ -38,6 +35,6 @@ public class Email implements Serializable {
 
     @Override
     public String toString() {
-        return this.email;
+        return this.endereco;
     }
 }

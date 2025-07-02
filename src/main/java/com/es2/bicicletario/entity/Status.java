@@ -3,7 +3,7 @@ package com.es2.bicicletario.entity;
 public enum Status {
     ATIVO,
     INATIVO,
-    AGUARDANDO_CONFIRMACAO,
+    AGUARDANDO_ATIVAMENTO,
     DISPONIVEL,
     EM_USO,
     LIVRE,

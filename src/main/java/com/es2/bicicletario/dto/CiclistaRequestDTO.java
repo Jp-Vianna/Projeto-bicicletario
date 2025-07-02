@@ -1,6 +1,8 @@
 package com.es2.bicicletario.dto;
 
+import com.es2.bicicletario.entity.CartaoDeCredito;
 import com.es2.bicicletario.entity.Nacionalidade;
+import com.es2.bicicletario.entity.Passaporte;
 import com.es2.bicicletario.validation.ValidNacionalidade; // Importe
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -24,6 +26,9 @@ public class CiclistaRequestDTO {
     @NotBlank(message = "O email é obrigatório.")
     @Email(message = "O formato do email é inválido.")
     private String email;
+
+    @NotBlank(message = "A data de nascimento é obrigatória.")
+    private LocalDate dataNascimento;
 
     @NotBlank(message = "A senha é obrigatória.")
     @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres.")
@@ -62,6 +67,17 @@ public class CiclistaRequestDTO {
         @NotBlank(message = "O CVV do cartão é obrigatório.")
         @Pattern(regexp = "\\d{3,4}", message = "O CVV deve ter 3 ou 4 dígitos.")
         private String cvv;
+
+        public CartaoDeCredito toEntity(){
+            CartaoDeCredito novoCartao = new CartaoDeCredito();
+
+            novoCartao.setCodigoSeguranca(cvv);
+            novoCartao.setNomeNoCartao(nomeTitular);
+            novoCartao.setNumeroCartao(numero);
+            novoCartao.setValidade(validade);
+
+            return novoCartao;
+        }
     }
 
     @Data
@@ -75,5 +91,14 @@ public class CiclistaRequestDTO {
 
         @NotBlank(message = "O país do passaporte é obrigatório.")
         private String pais;
+
+        public Passaporte toEntity(){
+            Passaporte novoPassaporte = new Passaporte();
+            novoPassaporte.setNumeroPassaporte(numero);
+            novoPassaporte.setDataDeValidade(dataDeValidade);
+            novoPassaporte.setPais(pais);
+            
+            return novoPassaporte; 
+        }
     }
 }

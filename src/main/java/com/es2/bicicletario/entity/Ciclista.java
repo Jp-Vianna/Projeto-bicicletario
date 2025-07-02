@@ -1,5 +1,7 @@
 package com.es2.bicicletario.entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -28,6 +30,9 @@ public class Ciclista {
     @Column(nullable = false)
     private Status status;
 
+    @Column(nullable = false)
+    private LocalDate dataNascimento;
+
     @Column(nullable = false, length = 100)
     private String nomeCiclista;
 
@@ -48,9 +53,6 @@ public class Ciclista {
 
     @Column(name = "foto_documento", nullable = false)
     private String fotoDocumento;
-
-    @Column(nullable = false)
-    private Boolean estrangeiro;
 
     @Embedded
     @Column(nullable = false)

@@ -26,7 +26,7 @@ public class FuncionarioResponseDTO {
         return new FuncionarioResponseDTO(
                 funcionario.getMatricula(),
                 funcionario.getNome(),
-                funcionario.getEmail().getEmail(), 
+                funcionario.getEmail().getEndereco(), 
                 funcionario.getCpf().getNumero(),   
                 funcionario.getIdade(),
                 funcionario.getFuncao()

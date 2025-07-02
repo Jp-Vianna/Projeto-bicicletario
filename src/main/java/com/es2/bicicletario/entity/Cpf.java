@@ -21,12 +21,12 @@ public class Cpf {
     /**
      * @return true se o CPF for válido, false caso contrário.
      */
-    public boolean validarCpf() {
-        if (this.numero == null) {
+    public static boolean validarCpf(String numero) {
+        if (numero == null) {
             return false;
         }
 
-        String cpfLimpo = this.numero.replaceAll("[^\\d]", "");
+        String cpfLimpo = numero.replaceAll("[^\\d]", "");
 
         if (cpfLimpo.length() != 11) {
             return false;

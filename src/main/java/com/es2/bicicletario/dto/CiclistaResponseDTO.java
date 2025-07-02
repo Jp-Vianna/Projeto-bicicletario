@@ -39,7 +39,7 @@ public class CiclistaResponseDTO {
         return new CiclistaResponseDTO(
                 ciclista.getId(),
                 ciclista.getNomeCiclista(),
-                ciclista.getEmail().getEmail(), 
+                ciclista.getEmail().getEndereco(), 
                 ciclista.getStatus(),
                 ciclista.getNacionalidade(),
                 ciclista.getCpf().getNumero(), 

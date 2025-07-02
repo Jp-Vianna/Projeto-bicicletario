@@ -34,7 +34,7 @@ public class Devolucao {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "aluguel_id",
-            referencedColumnName = "id",
+            referencedColumnName = "idAluguel",
             nullable = false,
             unique = true
     )
