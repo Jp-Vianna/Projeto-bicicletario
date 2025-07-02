@@ -30,7 +30,7 @@ public class AluguelService {
     private final DevolucaoRepository devolucaoRepository;
     private final AluguelRepository aluguelRepository;
     private final CiclistaRepository ciclistaRepository;
-    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AluguelService.class);
 
     /**
      * Cria um novo ciclista no sistema, aplicando validações de negócio.
