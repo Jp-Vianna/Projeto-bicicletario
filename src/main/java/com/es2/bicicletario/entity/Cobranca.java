@@ -3,7 +3,7 @@ package com.es2.bicicletario.entity;
 import java.math.BigDecimal;
 
 public class Cobranca {
-    private final static BigDecimal valorPadrao =  new BigDecimal("10.00");
+    private static final BigDecimal valorPadrao =  new BigDecimal("10.00");
     private Status status = Status.DISPONIVEL;
 
     public static void realizarCobrancaPadrao() {

@@ -43,7 +43,7 @@ public class Cpf {
             sm = 0;
             peso = 10;
             for (i = 0; i < 9; i++) {
-                num = (int) (cpfLimpo.charAt(i) - 48); // Converte o char para número
+                num = (cpfLimpo.charAt(i) - 48); // Converte o char para número
                 sm = sm + (num * peso);
                 peso = peso - 1;
             }
@@ -58,7 +58,7 @@ public class Cpf {
             sm = 0;
             peso = 11;
             for (i = 0; i < 10; i++) {
-                num = (int) (cpfLimpo.charAt(i) - 48);
+                num = (cpfLimpo.charAt(i) - 48);
                 sm = sm + (num * peso);
                 peso = peso - 1;
             }

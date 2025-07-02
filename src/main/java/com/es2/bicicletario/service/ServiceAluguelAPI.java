@@ -46,7 +46,7 @@ public class ServiceAluguelAPI {
             throw new RegraDeNegocioException("A senha e a confirmação de senha não coincidem.");
         }
 
-        if (novoCiclista.getCartaoDeCredito() == null || !CartaoDeCredito.verificaCartao(novoCiclista.getCartaoDeCredito().toEntity())) {
+        if (novoCiclista.getCartaoDeCredito() == null || !CartaoDeCredito.verificaCartao(/*integrar cartão aqui */)) {
             throw new RegraDeNegocioException("Dados do cartão de crédito são obrigatórios e o cartão deve ser válido.");
         }
 
@@ -106,7 +106,7 @@ public class ServiceAluguelAPI {
         .map(FuncionarioResponseDTO::fromEntity);
     }
 
-    public Boolean permiteAluguel(Ciclista ciclista, Integer idBicicleta) {
+    public Boolean permiteAluguel(Ciclista ciclista /*Entraria aqui a id da bicicleta */) {
        
         List<Status> statusDesejados = List.of(Status.EM_ANDAMENTO, Status.FINALIZADO_COM_COBRANCA_PENDENTE);
         List<Aluguel> alugueis = aluguelRepository.findAllByCiclistaIdAndStatusIn(ciclista.getId(), statusDesejados);
@@ -114,9 +114,9 @@ public class ServiceAluguelAPI {
         if (alugueis.isEmpty() && ciclista.getStatus().equals(Status.ATIVO)) {
             return true;
         }
-        else {
-            return false;
-        }
+
+        return false;
+        
     }
 
     public Integer getBicicletaAlugada(Integer idCiclista) { // Ainda falta integrar
@@ -171,7 +171,7 @@ public class ServiceAluguelAPI {
         Optional<Ciclista> optionalCiclista = ciclistaRepository.findById(novoAluguel.getIdCiclista());
         Ciclista ciclista = optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
 
-        if (!permiteAluguel(ciclista, 10001)) {
+        if (!permiteAluguel(ciclista)) {
             throw new RegraDeNegocioException("O aluguel não foi autorizado.");
         }       
 
@@ -227,7 +227,7 @@ public class ServiceAluguelAPI {
         return DevolucaoResponseDTO.fromEntity(devolucaoCriado);
     }
 
-    public Boolean validaTranca(Integer idTranca){
+    public Boolean validaTranca(/*Id da tranca */){
         return true;//Integrar
     }
 

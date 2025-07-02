@@ -22,7 +22,7 @@ public class CartaoDeCredito {
     private YearMonth validade; 
     private String codigoSeguranca; 
 
-    public static boolean verificaCartao(CartaoDeCredito cartao) { // Não integrado
+    public static boolean verificaCartao() { // Não integrado
         System.out.println("Cartão validado com sucesso.");
 
         return true;
