@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ServiceAluguelAPI {
+public class AluguelService {
 
     private final FuncionarioRepository funcionarioRepository;
     private final DevolucaoRepository devolucaoRepository;

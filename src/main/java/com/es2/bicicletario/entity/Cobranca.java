@@ -1,19 +1,21 @@
 package com.es2.bicicletario.entity;
 
-import java.math.BigDecimal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Cobranca {
-    private static final BigDecimal valorPadrao =  new BigDecimal("10.00");
     private Status status = Status.DISPONIVEL;
+    private static final Logger logger = LoggerFactory.getLogger(Cobranca.class);
+    
 
     public static void realizarCobrancaPadrao() {
-        System.out.println("Valor inicial, R$" + valorPadrao + "cobrado com sucesso!");
+        logger.warn("AVISO: Integração com API externa ainda não implementada. Usando comportamento FALSO de SUCESSO");
     }
 
     public static String realizarCobrancaExtra() {
-        System.out.println("Valor extra a pagar de R$20.54 cobrado com sucesso!");
+        logger.warn("AVISO: Integração com API externa ainda não implementada. Usando comportamento FALSO de SUCESSO");
         
-        return "30.58";
+        return "28.90";
     }
 
     public Status getStatus() {

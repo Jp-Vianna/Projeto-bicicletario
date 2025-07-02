@@ -1,9 +1,13 @@
 package com.es2.bicicletario.entity;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 // Simulando integração
 public class Tranca {
     private Integer idTranca; 
     private Integer idBicicleta;
+    private static final Logger logger = LoggerFactory.getLogger(Tranca.class);
 
     public Tranca(Integer id){
         this.idTranca = id;
@@ -11,11 +15,11 @@ public class Tranca {
     }
 
     public static void destravaTranca() {
-        System.out.println("Tranca destravada com sucesso!");
+        logger.warn("AVISO: Integração com API externa ainda não implementada. Usando comportamento FALSO de SUCESSO");
     }
 
     public static void travarTranca() {
-        System.out.println("Tranca travada com sucesso!");
+        logger.warn("AVISO: Integração com API externa ainda não implementada. Usando comportamento FALSO de SUCESSO");
     }
 
     public Integer getIdTranca() {
