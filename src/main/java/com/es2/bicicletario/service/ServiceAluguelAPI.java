@@ -136,8 +136,7 @@ public class ServiceAluguelAPI {
 
 
     public Boolean existeEmail(String email) {
-        Optional<Ciclista> optionalCiclista = ciclistaRepository.findByEmailEndereco(email);
-        Ciclista ciclista = optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
+        Ciclista ciclista = converteParaCiclista(ciclistaRepository.findByEmailEndereco(email));
 
         return ciclista != null;
     }
@@ -159,8 +158,7 @@ public class ServiceAluguelAPI {
     }
 
     public CartaoDeCredito getCartaoDeCredito(Integer idCiclista) {
-        Optional<Ciclista> optionalCiclista = ciclistaRepository.findById(idCiclista);
-        Ciclista ciclista = optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
+        Ciclista ciclista = converteParaCiclista(ciclistaRepository.findById(idCiclista));
         
         return ciclista.getCartao(); 
     }
@@ -168,8 +166,7 @@ public class ServiceAluguelAPI {
     @Transactional
     public AluguelResponseDTO realizarAluguel(AluguelRequestDTO novoAluguel) { // Integrar com trancas e bikes futuramente
         
-        Optional<Ciclista> optionalCiclista = ciclistaRepository.findById(novoAluguel.getIdCiclista());
-        Ciclista ciclista = optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
+        Ciclista ciclista = converteParaCiclista(ciclistaRepository.findById(novoAluguel.getIdCiclista()));
 
         if (!permiteAluguel(ciclista)) {
             throw new RegraDeNegocioException("O aluguel não foi autorizado.");
@@ -233,6 +230,12 @@ public class ServiceAluguelAPI {
 
     public Boolean validaBicicleta(){ // Integrar
         return true;
+    }
+
+    private Ciclista converteParaCiclista(Optional<Ciclista> optionalCiclista){
+        Ciclista ciclista = optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
+
+        return ciclista;
     }
 
 }
