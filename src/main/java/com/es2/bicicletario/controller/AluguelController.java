@@ -143,16 +143,9 @@ public class AluguelController {
      */
     @PostMapping("/devolucoes")
     public ResponseEntity<DevolucaoResponseDTO> realizarDevolucao(@Valid @RequestBody DevolucaoRequestDTO devolucaoRequestDTO) {
-        // ASSUNTO IMPORTANTE: A assinatura do seu método de serviço `realizarDevolucao` espera um objeto `Aluguel`.
-        // Para que o controller funcione, o serviço precisaria ser levemente refatorado.
-        // A sugestão é que o método de serviço receba um ID (da bicicleta ou do ciclista) e busque o aluguel internamente.
-        // O código abaixo é uma SIMULAÇÃO de como ficaria após essa pequena refatoração.
-
-        // Exemplo de como poderia ser a chamada após refatorar o serviço:
-        // DevolucaoResponseDTO devolucaoRealizada = service.realizarDevolucao(devolucaoRequestDTO);
-        // return new ResponseEntity<>(devolucaoRealizada, HttpStatus.CREATED);
+  
+        DevolucaoResponseDTO devolucaoRealizada = service.realizarDevolucao(devolucaoRequestDTO);
+        return new ResponseEntity<>(devolucaoRealizada, HttpStatus.CREATED);
         
-        // Retornando 'Não Implementado' por enquanto para indicar a necessidade de ajuste.
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 }

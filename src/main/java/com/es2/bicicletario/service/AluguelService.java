@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,7 @@ public class AluguelService {
     private final DevolucaoRepository devolucaoRepository;
     private final AluguelRepository aluguelRepository;
     private final CiclistaRepository ciclistaRepository;
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     /**
      * Cria um novo ciclista no sistema, aplicando validações de negócio.
@@ -187,12 +190,15 @@ public class AluguelService {
     }
 
     public Boolean trancaDisponivel() { // A integrar 
-        System.out.println("Tranca disponível!");
+        logger.warn("AVISO: Integração com API externa ainda não implementada. Usando comportamento FALSO de SUCESSO");
 
         return true;
     }
 
-    public DevolucaoResponseDTO realizarDevolucao(DevolucaoRequestDTO novaDevolucao, Aluguel aluguel) { // A integrar
+    public DevolucaoResponseDTO realizarDevolucao(DevolucaoRequestDTO novaDevolucao) { // A integrar
+
+        Optional<Aluguel> optionalAluguel = aluguelRepository.findByIdBicicletaAndStatus(novaDevolucao.getIdBicicleta(), Status.EM_ANDAMENTO);
+        Aluguel aluguel = optionalAluguel.orElseThrow(() -> new RuntimeException("Não encontrou alugueis ativos com essa bicicleta."));
 
         String valorTotal = Cobranca.realizarCobrancaExtra(); // A integrar
 
