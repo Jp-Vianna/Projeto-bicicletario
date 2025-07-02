@@ -106,17 +106,12 @@ public class ServiceAluguelAPI {
         .map(FuncionarioResponseDTO::fromEntity);
     }
 
-    public Boolean permiteAluguel(Ciclista ciclista /*Entraria aqui a id da bicicleta */) {
+    public boolean permiteAluguel(Ciclista ciclista /*Entraria aqui a id da bicicleta */) {
        
         List<Status> statusDesejados = List.of(Status.EM_ANDAMENTO, Status.FINALIZADO_COM_COBRANCA_PENDENTE);
         List<Aluguel> alugueis = aluguelRepository.findAllByCiclistaIdAndStatusIn(ciclista.getId(), statusDesejados);
 
-        if (alugueis.isEmpty() && ciclista.getStatus().equals(Status.ATIVO)) {
-            return true;
-        }
-
-        return false;
-        
+        return alugueis.isEmpty() && ciclista.getStatus().equals(Status.ATIVO);
     }
 
     public Integer getBicicletaAlugada(Integer idCiclista) { // Ainda falta integrar
@@ -233,9 +228,7 @@ public class ServiceAluguelAPI {
     }
 
     private Ciclista converteParaCiclista(Optional<Ciclista> optionalCiclista){
-        Ciclista ciclista = optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
-
-        return ciclista;
+        return optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
     }
 
 }

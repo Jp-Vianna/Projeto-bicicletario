@@ -19,7 +19,7 @@ public class Devolucao {
     private Integer idDevolucao;
 
     @Column(nullable = true)
-    private Integer TrancaFinal; // Não integrado
+    private Integer trancaFinal; // Não integrado
 
     @Column(nullable = true)
     private LocalDateTime horaFim;
