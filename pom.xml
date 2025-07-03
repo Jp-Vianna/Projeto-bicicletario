@@ -31,8 +31,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>11</maven.compiler.target>
-			
 		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<sonar.organization>jp-vianna</sonar.organization>
+		<sonar.projectKey>Jp-Vianna_Projeto-bicicletario</sonar.projectKey>
 	</properties>
 	<dependencies>
 		<dependency>
