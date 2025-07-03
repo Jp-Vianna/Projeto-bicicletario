@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class DatabaseService {
 
     private final DataSource dataSource;
-    private static final Logger logger = LoggerFactory.getLogger(CartaoDeCredito.class);
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseService.class);
 
     @Autowired
     public DatabaseService(DataSource dataSource) {
@@ -49,10 +49,8 @@ public class DatabaseService {
             stmt.execute(sql);
             
         } finally {
-            if (tempFile.exists()) {
-                if(tempFile.delete()){
+            if (tempFile.exists() && tempFile.delete()) {
                     logger.warn("Arquivo apagado com sucesso SUCESSO");
-                }
             }
         }
     }
