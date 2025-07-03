@@ -31,7 +31,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AluguelServiceTestTwo {
+class AluguelServiceTwoTest {
 
     @InjectMocks
     private AluguelService aluguelService;

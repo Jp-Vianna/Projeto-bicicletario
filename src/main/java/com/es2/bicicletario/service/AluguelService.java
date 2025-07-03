@@ -245,13 +245,10 @@ public class AluguelService {
                 throw new RegraDeNegocioException("Este CPF já está em uso.");
             }
 
-        } else if (novoCiclista.getNacionalidade() == Nacionalidade.ESTRANGEIRO) {
-
-            if (novoCiclista.getPassaporte() != null &&
+        } else if (novoCiclista.getNacionalidade() == Nacionalidade.ESTRANGEIRO && novoCiclista.getPassaporte() != null &&
                 ciclistaRepository.findByPassaporteNumeroPassaporte(novoCiclista.getPassaporte().getNumero()).isPresent()) {
-                throw new RegraDeNegocioException("Este Passaporte já está em uso.");
-            }
-            
+
+                throw new RegraDeNegocioException("Este Passaporte já está em uso.");  
         }
 
         return true;

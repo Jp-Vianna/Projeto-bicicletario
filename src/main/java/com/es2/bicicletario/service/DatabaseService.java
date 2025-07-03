@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.es2.bicicletario.entity.CartaoDeCredito;
+
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,11 +14,14 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class DatabaseService {
 
     private final DataSource dataSource;
+    private static final Logger logger = LoggerFactory.getLogger(CartaoDeCredito.class);
 
     @Autowired
     public DatabaseService(DataSource dataSource) {
@@ -45,7 +50,9 @@ public class DatabaseService {
             
         } finally {
             if (tempFile.exists()) {
-                tempFile.delete();
+                if(tempFile.delete()){
+                    logger.warn("Arquivo apagado com sucesso SUCESSO");
+                }
             }
         }
     }
