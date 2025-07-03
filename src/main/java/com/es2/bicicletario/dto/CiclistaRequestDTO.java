@@ -27,7 +27,7 @@ public class CiclistaRequestDTO {
     @Email(message = "O formato do email é inválido.")
     private String email;
 
-    @NotBlank(message = "A data de nascimento é obrigatória.")
+    @NotNull(message = "A data de nascimento é obrigatória.")
     private LocalDate dataNascimento;
 
     @NotBlank(message = "A senha é obrigatória.")
