@@ -40,13 +40,7 @@ public class AluguelService {
     @Transactional
     public CiclistaResponseDTO criarCiclista(CiclistaRequestDTO novoCiclista) {
 
-        if (novoCiclista.getSenha() == null || !novoCiclista.getSenha().equals(novoCiclista.getConfirmacaoSenha())) {
-            throw new RegraDeNegocioException("A senha e a confirmação de senha não coincidem.");
-        }
-
-        if (novoCiclista.getCartaoDeCredito() == null || !CartaoDeCredito.verificaCartao(/*integrar cartão aqui */)) {
-            throw new RegraDeNegocioException("Dados do cartão de crédito são obrigatórios e o cartão deve ser válido.");
-        }
+        this.verificaDadosCiclista(novoCiclista);
 
         Ciclista ciclista = new Ciclista();
         ciclista.setNomeCiclista(novoCiclista.getNomeCiclista());
@@ -230,6 +224,37 @@ public class AluguelService {
 
     private Ciclista converteParaCiclista(Optional<Ciclista> optionalCiclista){
         return optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
+    }
+
+    private boolean verificaDadosCiclista(CiclistaRequestDTO novoCiclista) {
+        if (novoCiclista.getSenha() == null || !novoCiclista.getSenha().equals(novoCiclista.getConfirmacaoSenha())) {
+            throw new RegraDeNegocioException("A senha e a confirmação de senha não coincidem.");
+        }
+
+        if (novoCiclista.getCartaoDeCredito() == null || !CartaoDeCredito.verificaCartao(/*integrar cartão aqui */)) {
+            throw new RegraDeNegocioException("Dados do cartão de crédito são obrigatórios e o cartão deve ser válido.");
+        }
+
+        if (ciclistaRepository.findByEmailEndereco(novoCiclista.getEmail()).isPresent()) {
+            throw new RegraDeNegocioException("Este e-mail já está em uso.");
+        }
+
+        if (novoCiclista.getNacionalidade() == Nacionalidade.BRASILEIRO) {
+
+            if (ciclistaRepository.findByCpfNumero(novoCiclista.getCpf()).isPresent()) {
+                throw new RegraDeNegocioException("Este CPF já está em uso.");
+            }
+
+        } else if (novoCiclista.getNacionalidade() == Nacionalidade.ESTRANGEIRO) {
+
+            if (novoCiclista.getPassaporte() != null &&
+                ciclistaRepository.findByPassaporteNumeroPassaporte(novoCiclista.getPassaporte().getNumero()).isPresent()) {
+                throw new RegraDeNegocioException("Este Passaporte já está em uso.");
+            }
+            
+        }
+
+        return true;
     }
 
 }

@@ -16,7 +16,6 @@ class AluguelTest {
 
     @BeforeEach
     void setUp() {
-        // Cria um ciclista mock/exemplo para ser usado nos testes do aluguel
         ciclista = new Ciclista();
         ciclista.setId(1);
         ciclista.setNomeCiclista("Joana Santos");
@@ -25,10 +24,9 @@ class AluguelTest {
 
     @Test
     void deveInstanciarAluguelCorretamenteComSetters() {
-        // Arrange
+
         LocalDateTime horaInicio = LocalDateTime.now();
 
-        // Act
         Aluguel aluguel = new Aluguel();
         aluguel.setIdAluguel(100);
         aluguel.setCiclista(ciclista);
@@ -37,7 +35,6 @@ class AluguelTest {
         aluguel.setHoraInicio(horaInicio);
         aluguel.setStatus(Status.EM_ANDAMENTO);
 
-        // Assert
         assertNotNull(aluguel);
         assertEquals(100, aluguel.getIdAluguel());
         assertEquals(55, aluguel.getIdBicicleta());
@@ -50,10 +47,9 @@ class AluguelTest {
 
     @Test
     void deveInstanciarAluguelCorretamenteComConstrutorCompleto() {
-        // Arrange
+
         LocalDateTime horaInicio = LocalDateTime.now().minusHours(1);
 
-        // Act
         Aluguel aluguel = new Aluguel(
                 101,
                 56,
@@ -63,7 +59,6 @@ class AluguelTest {
                 Status.FINALIZADO
         );
 
-        // Assert
         assertNotNull(aluguel);
         assertEquals(101, aluguel.getIdAluguel());
         assertEquals(56, aluguel.getIdBicicleta());

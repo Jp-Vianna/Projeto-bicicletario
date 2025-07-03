@@ -26,10 +26,12 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AluguelServiceTest2 {
+class AluguelServiceTestTwo {
 
     @InjectMocks
     private AluguelService aluguelService;
@@ -48,7 +50,7 @@ class AluguelServiceTest2 {
 
     @BeforeEach
     void setUp() {
-        // Objeto DTO para os testes de criação
+        
         ciclistaRequestDTO = new CiclistaRequestDTO();
         ciclistaRequestDTO.setNomeCiclista("Joana Dark");
         ciclistaRequestDTO.setEmail("joana.dark@email.com");
@@ -63,13 +65,12 @@ class AluguelServiceTest2 {
         cartaoDto.setCvv("321");
         ciclistaRequestDTO.setCartaoDeCredito(cartaoDto);
 
-        // Objeto de Entidade completo para os testes de regras de negócio
         ciclistaBrasileiro = new Ciclista();
         ciclistaBrasileiro.setId(1);
         ciclistaBrasileiro.setNomeCiclista("Ciclista Ativo Brasileiro");
         ciclistaBrasileiro.setStatus(Status.ATIVO);
         ciclistaBrasileiro.setNacionalidade(Nacionalidade.BRASILEIRO);
-        ciclistaBrasileiro.setCpf(new Cpf("11122233344"));
+        ciclistaBrasileiro.setCpf(new Cpf("00270625709"));
         ciclistaBrasileiro.setEmail(new Email("ciclista.br@email.com"));
         ciclistaBrasileiro.setCartao(new CartaoDeCredito("1111222233334444", "Ciclista BR", YearMonth.now().plusYears(3), "123"));
     }
@@ -152,7 +153,7 @@ class AluguelServiceTest2 {
 
         @Test
         void realizarDevolucao_ComSucesso_DeveAtualizarAluguelESalvarDevolucao() {
-            // Arrange
+
             DevolucaoRequestDTO devolucaoDTO = new DevolucaoRequestDTO();
             devolucaoDTO.setIdBicicleta(101);
             devolucaoDTO.setIdTranca(202);
@@ -170,10 +171,8 @@ class AluguelServiceTest2 {
                 return d;
             });
 
-            // Act
             DevolucaoResponseDTO response = aluguelService.realizarDevolucao(devolucaoDTO);
 
-            // Assert
             assertThat(response).isNotNull();
             assertThat(response.getId()).isEqualTo(1);
             assertThat(response.getIdAluguel()).isEqualTo(50);
@@ -183,6 +182,73 @@ class AluguelServiceTest2 {
                 devolucao.getTrancaFinal().equals(202) &&
                 devolucao.getAluguel().getIdAluguel().equals(50)
             ));
+        }
+    }
+
+     @Nested
+    class CriacaoDeCiclistaIntegridadeTest {
+
+        @Test
+        void criarCiclista_QuandoEmailJaExiste_DeveLancarExcecao() {
+
+            when(ciclistaRepository.findByEmailEndereco(anyString())).thenReturn(Optional.of(new Ciclista()));
+
+            assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
+                .isInstanceOf(Exception.class);
+        }
+
+        @Test
+        void criarCiclista_QuandoCpfJaExiste_DeveLancarExcecao() {
+
+            String cpfDuplicado = ciclistaRequestDTO.getCpf();
+            String emailUnicoParaEsteTeste = "email.unico.cpf@teste.com";
+            ciclistaRequestDTO.setEmail(emailUnicoParaEsteTeste);
+            ciclistaRequestDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
+            
+            when(ciclistaRepository.findByEmailEndereco(emailUnicoParaEsteTeste)).thenReturn(Optional.empty());
+
+            when(ciclistaRepository.findByCpfNumero(cpfDuplicado)).thenReturn(Optional.of(new Ciclista()));
+            
+            assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessage("Este CPF já está em uso.");
+        }
+
+        @Test
+        void criarCiclista_EstrangeiroComPassaporteExpirado_DeveLancarExcecao() {
+
+            ciclistaRequestDTO.setNacionalidade(Nacionalidade.ESTRANGEIRO);
+            ciclistaRequestDTO.setCpf(null);
+
+            CiclistaRequestDTO.PassaporteDto passaporteExpiradoDto = new CiclistaRequestDTO.PassaporteDto();
+            passaporteExpiradoDto.setNumero("XYZ987");
+            passaporteExpiradoDto.setPais("Estrangeiro");
+            passaporteExpiradoDto.setDataDeValidade(LocalDate.now().minusDays(1));
+            ciclistaRequestDTO.setPassaporte(passaporteExpiradoDto);
+
+            assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessage("Para estrangeiros, um passaporte válido é obrigatório.");
+        }
+
+        @Test
+        void criarCiclista_EstrangeiroComPassaporteDuplicado_DeveLancarExcecao() {
+
+            ciclistaRequestDTO.setNacionalidade(Nacionalidade.ESTRANGEIRO);
+            ciclistaRequestDTO.setCpf(null);
+
+            CiclistaRequestDTO.PassaporteDto passaporteDto = new CiclistaRequestDTO.PassaporteDto();
+            passaporteDto.setNumero("PASS123");
+            passaporteDto.setPais("FRANÇA");
+            passaporteDto.setDataDeValidade(LocalDate.now().plusYears(5));
+            ciclistaRequestDTO.setPassaporte(passaporteDto);
+
+            when(ciclistaRepository.findByPassaporteNumeroPassaporte("PASS123"))
+                .thenReturn(Optional.of(new Ciclista()));
+
+            assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessage("Este Passaporte já está em uso.");
         }
     }
 }

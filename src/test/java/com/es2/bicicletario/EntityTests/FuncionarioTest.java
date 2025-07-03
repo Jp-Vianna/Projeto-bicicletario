@@ -10,22 +10,20 @@ class FuncionarioTest {
 
     @Test
     void deveInstanciarFuncionarioCorretamenteComSetters() {
-        // Arrange
+
         Email email = new Email("funcionario@empresa.com");
         Cpf cpf = new Cpf("11122233344");
 
-        // Act
         Funcionario funcionario = new Funcionario();
         funcionario.setMatricula("F001");
         funcionario.setNome("Felipe Machado");
         funcionario.setSenha("senhaFunc");
-        funcionario.setConfirmacaoSenha("senhaFunc"); // Campo transient, mas bom para testar o modelo
+        funcionario.setConfirmacaoSenha("senhaFunc"); 
         funcionario.setEmail(email);
         funcionario.setIdade(30);
         funcionario.setFuncao("Operador");
         funcionario.setCpf(cpf);
 
-        // Assert
         assertNotNull(funcionario);
         assertEquals("F001", funcionario.getMatricula());
         assertEquals("Felipe Machado", funcionario.getNome());
@@ -39,11 +37,10 @@ class FuncionarioTest {
 
     @Test
     void deveInstanciarFuncionarioCorretamenteComConstrutorCompleto() {
-        // Arrange
+
         Email email = new Email("admin@empresa.com");
         Cpf cpf = new Cpf("44455566677");
 
-        // Act
         Funcionario funcionario = new Funcionario(
                 "F002",
                 "senhaAdmin",
@@ -55,7 +52,6 @@ class FuncionarioTest {
                 cpf
         );
 
-        // Assert
         assertNotNull(funcionario);
         assertEquals("F002", funcionario.getMatricula());
         assertEquals("Márcio Braga", funcionario.getNome());

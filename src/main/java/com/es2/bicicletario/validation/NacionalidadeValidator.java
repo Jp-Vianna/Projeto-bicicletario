@@ -11,7 +11,6 @@ public class NacionalidadeValidator implements ConstraintValidator<ValidNacional
     @Override
     public boolean isValid(CiclistaRequestDTO dto, ConstraintValidatorContext context) {
         if (dto.getNacionalidade() == null) {
-            // A anotação @NotNull no campo já cuida disso, mas é bom ter defesa.
             return true; 
         }
 

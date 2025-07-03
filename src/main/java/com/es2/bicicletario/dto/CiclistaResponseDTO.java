@@ -20,7 +20,6 @@ public class CiclistaResponseDTO {
     private String cpf;
     private String passaporte;
 
-    // Dados do cartão de crédito de forma segura
     private String nomeTitularCartao;
     private String numeroCartaoMascarado;
 

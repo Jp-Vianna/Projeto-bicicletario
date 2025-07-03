@@ -11,4 +11,5 @@ import com.es2.bicicletario.entity.Ciclista;
 public interface CiclistaRepository extends JpaRepository<Ciclista, Integer> {
     Optional<Ciclista> findByCpfNumero(String cpf);
     Optional<Ciclista> findByEmailEndereco(String email);
+    Optional<Ciclista> findByPassaporteNumeroPassaporte(String passaporte);
 }

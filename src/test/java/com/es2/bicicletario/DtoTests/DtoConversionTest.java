@@ -23,7 +23,7 @@ class DtoConversionTest {
 
     @Test
     void deveConverterCiclistaRequestDtoParaEntidade() {
-        // Arrange
+
         CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
         cartaoDto.setNumero("1111222233334444");
         cartaoDto.setNomeTitular("Teste Titular");
@@ -35,11 +35,9 @@ class DtoConversionTest {
         passaporteDto.setPais("PORTUGAL");
         passaporteDto.setDataDeValidade(LocalDate.of(2035, 1, 1));
 
-        // Act
         CartaoDeCredito cartaoEntity = cartaoDto.toEntity();
         Passaporte passaporteEntity = passaporteDto.toEntity();
 
-        // Assert
         assertThat(cartaoEntity.getNumeroCartao()).isEqualTo("1111222233334444");
         assertThat(cartaoEntity.getNomeNoCartao()).isEqualTo("Teste Titular");
         assertThat(cartaoEntity.getValidade()).isEqualTo(YearMonth.of(2030, 10));
@@ -52,7 +50,7 @@ class DtoConversionTest {
 
     @Test
     void deveConverterEntidadeCiclistaParaResponseDto() {
-        // Arrange
+
         CartaoDeCredito cartao = new CartaoDeCredito("1234567812345678", "Jose da Silva", YearMonth.of(2028, 12), "123");
         Ciclista ciclista = new Ciclista(
                 1,
@@ -68,10 +66,8 @@ class DtoConversionTest {
                 null
         );
 
-        // Act
         CiclistaResponseDTO dto = CiclistaResponseDTO.fromEntity(ciclista);
 
-        // Assert
         assertThat(dto.getId()).isEqualTo(1);
         assertThat(dto.getNome()).isEqualTo("Jose da Silva");
         assertThat(dto.getEmail()).isEqualTo("jose.silva@email.com");
@@ -84,7 +80,7 @@ class DtoConversionTest {
 
     @Test
     void deveConverterEntidadeAluguelParaResponseDto() {
-        // Arrange
+
         Ciclista ciclista = new Ciclista();
         ciclista.setId(10);
         ciclista.setNomeCiclista("Maria Oliveira");
@@ -98,10 +94,8 @@ class DtoConversionTest {
                 Status.EM_ANDAMENTO
         );
 
-        // Act
         AluguelResponseDTO dto = AluguelResponseDTO.fromEntity(aluguel);
 
-        // Assert
         assertThat(dto.getId()).isEqualTo(101);
         assertThat(dto.getIdBicicleta()).isEqualTo(55);
         assertThat(dto.getHoraInicio()).isEqualTo(LocalDateTime.of(2024, 1, 15, 10, 0, 0));
@@ -112,7 +106,7 @@ class DtoConversionTest {
 
     @Test
     void deveConverterEntidadeDevolucaoParaResponseDto() {
-        // Arrange
+
         Aluguel aluguel = new Aluguel();
         aluguel.setIdAluguel(500);
 
@@ -124,10 +118,8 @@ class DtoConversionTest {
                 aluguel
         );
 
-        // Act
         DevolucaoResponseDTO dto = DevolucaoResponseDTO.fromEntity(devolucao);
 
-        // Assert
         assertThat(dto.getId()).isEqualTo(25);
         assertThat(dto.getTrancaFinal()).isEqualTo(909);
         assertThat(dto.getHoraFim()).isEqualTo(LocalDateTime.of(2024, 1, 15, 11, 30, 0));
@@ -137,7 +129,7 @@ class DtoConversionTest {
 
     @Test
     void deveConverterEntidadeFuncionarioParaResponseDto() {
-        // Arrange
+
         Funcionario funcionario = new Funcionario(
                 "F001",
                 "senha",
@@ -149,10 +141,8 @@ class DtoConversionTest {
                 new Cpf("88877766655")
         );
 
-        // Act
         FuncionarioResponseDTO dto = FuncionarioResponseDTO.fromEntity(funcionario);
 
-        // Assert
         assertThat(dto.getMatricula()).isEqualTo("F001");
         assertThat(dto.getNome()).isEqualTo("Carlos Alberto");
         assertThat(dto.getEmail()).isEqualTo("func@email.com");

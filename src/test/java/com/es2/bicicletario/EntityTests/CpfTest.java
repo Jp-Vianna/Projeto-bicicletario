@@ -10,7 +10,7 @@ class CpfTest {
 
     @Test
     void validarCpf_DeveRetornarTrue_ParaCpfValido() {
-        assertTrue(Cpf.validarCpf("12345678909")); // Exemplo de CPF válido (apenas para formato)
+        assertTrue(Cpf.validarCpf("12345678909")); 
         assertTrue(Cpf.validarCpf("111.222.333-96"));
     }
 

@@ -18,8 +18,7 @@ class DevolucaoTest {
 
     @BeforeEach
     void setUp() {
-        // Para testar a Devolucao, primeiro criamos um Aluguel de exemplo,
-        // pois toda devolução deve estar associada a um.
+
         Ciclista ciclista = new Ciclista();
         ciclista.setId(1);
         ciclista.setNomeCiclista("Carlos Pereira");
@@ -33,11 +32,10 @@ class DevolucaoTest {
 
     @Test
     void deveInstanciarDevolucaoCorretamenteComSetters() {
-        // Arrange
+
         LocalDateTime horaFim = LocalDateTime.now();
         BigDecimal cobranca = new BigDecimal("15.50");
 
-        // Act
         Devolucao devolucao = new Devolucao();
         devolucao.setIdDevolucao(20);
         devolucao.setAluguel(aluguel);
@@ -45,7 +43,6 @@ class DevolucaoTest {
         devolucao.setHoraFim(horaFim);
         devolucao.setCobranca(cobranca);
 
-        // Assert
         assertNotNull(devolucao);
         assertEquals(20, devolucao.getIdDevolucao());
         assertEquals(305, devolucao.getTrancaFinal());
@@ -57,11 +54,10 @@ class DevolucaoTest {
 
     @Test
     void deveInstanciarDevolucaoCorretamenteComConstrutorCompleto() {
-        // Arrange
+
         LocalDateTime horaFim = LocalDateTime.now().minusMinutes(5);
         BigDecimal cobranca = new BigDecimal("25.00");
 
-        // Act
         Devolucao devolucao = new Devolucao(
                 21,
                 306,
@@ -70,7 +66,6 @@ class DevolucaoTest {
                 aluguel
         );
 
-        // Assert
         assertNotNull(devolucao);
         assertEquals(21, devolucao.getIdDevolucao());
         assertEquals(306, devolucao.getTrancaFinal());
