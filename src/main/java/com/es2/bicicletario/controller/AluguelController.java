@@ -1,7 +1,6 @@
 package com.es2.bicicletario.controller;
 
 import com.es2.bicicletario.dto.*;
-import com.es2.bicicletario.entity.CartaoDeCredito;
 import com.es2.bicicletario.entity.Funcionario;
 import com.es2.bicicletario.service.AluguelService;
 import org.springframework.http.HttpStatus;
