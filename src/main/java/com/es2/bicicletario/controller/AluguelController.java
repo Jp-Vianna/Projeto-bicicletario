@@ -49,20 +49,9 @@ public class AluguelController {
      * @param email O e-mail a ser verificado.
      * @return true se o e-mail existir, false caso contrário.
      */
-    @GetMapping("/ciclistas/verificar-email")
-    public ResponseEntity<Boolean> existeEmail(@RequestParam String email) {
+    @GetMapping("/ciclistas/verificar-email/{email}")
+    public ResponseEntity<Boolean> existeEmail(@PathVariable String email) {
         return ResponseEntity.ok(service.existeEmail(email));
-    }
-    
-    /**
-     * Retorna o cartão de crédito de um ciclista.
-     * ATENÇÃO: Endpoint sensível. Proteger adequadamente em produção.
-     * @param id O ID do ciclista.
-     * @return O cartão de crédito do ciclista.
-     */
-    @GetMapping("/ciclistas/{id}/cartao")
-    public ResponseEntity<CartaoDeCredito> getCartaoDeCredito(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.getCartaoDeCredito(id));
     }
 
     // --- Endpoints para Funcionario ---
@@ -124,16 +113,6 @@ public class AluguelController {
     public ResponseEntity<AluguelResponseDTO> realizarAluguel(@Valid @RequestBody AluguelRequestDTO aluguelRequestDTO) {
         AluguelResponseDTO aluguelRealizado = service.realizarAluguel(aluguelRequestDTO);
         return new ResponseEntity<>(aluguelRealizado, HttpStatus.CREATED);
-    }
-
-    /**
-     * Busca um aluguel ativo pelo ID da bicicleta.
-     * @param idBicicleta O ID da bicicleta.
-     * @return O aluguel ativo encontrado.
-     */
-    @GetMapping("/alugueis/bicicleta/{idBicicleta}")
-    public ResponseEntity<AluguelResponseDTO> getAluguelAtivoPorBicicleta(@PathVariable Integer idBicicleta) {
-        return ResponseEntity.ok(service.getAluguelByIdBicicleta(idBicicleta));
     }
     
     /**
