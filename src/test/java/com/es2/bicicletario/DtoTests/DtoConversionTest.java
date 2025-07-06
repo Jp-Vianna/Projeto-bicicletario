@@ -29,7 +29,7 @@ class DtoConversionTest {
 
         CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
         cartaoDto.setNumero("1111222233334444");
-        cartaoDto.setNomeTitular("Teste Titular");
+        cartaoDto.setNomeTitular(nomeTeste);
         cartaoDto.setValidade(YearMonth.of(2030, 10));
         cartaoDto.setCvv("987");
 
@@ -42,7 +42,7 @@ class DtoConversionTest {
         Passaporte passaporteEntity = passaporteDto.toEntity();
 
         assertThat(cartaoEntity.getNumeroCartao()).isEqualTo("1111222233334444");
-        assertThat(cartaoEntity.getNomeNoCartao()).isEqualTo("Teste Titular");
+        assertThat(cartaoEntity.getNomeNoCartao()).isEqualTo(nomeTeste);
         assertThat(cartaoEntity.getValidade()).isEqualTo(YearMonth.of(2030, 10));
         assertThat(cartaoEntity.getCodigoSeguranca()).isEqualTo("987");
 
@@ -59,11 +59,11 @@ class DtoConversionTest {
                 1,
                 Status.ATIVO,
                 LocalDate.of(1995, 5, 10),
-                "Jose da Silva",
+                nomeTeste,
                 new Cpf("11122233344"),
                 senhaTeste,
                 Nacionalidade.BRASILEIRO,
-                new Email("jose.silva@email.com"),
+                new Email("silva@email.com"),
                 "/path/foto",
                 cartao,
                 null
@@ -72,12 +72,12 @@ class DtoConversionTest {
         CiclistaResponseDTO dto = CiclistaResponseDTO.fromEntity(ciclista);
 
         assertThat(dto.getId()).isEqualTo(1);
-        assertThat(dto.getNome()).isEqualTo("Jose da Silva");
-        assertThat(dto.getEmail()).isEqualTo("jose.silva@email.com");
+        assertThat(dto.getNome()).isEqualTo(nomeTeste);
+        assertThat(dto.getEmail()).isEqualTo("silva@email.com");
         assertThat(dto.getStatus()).isEqualTo(Status.ATIVO);
         assertThat(dto.getCpf()).isEqualTo("11122233344");
         assertThat(dto.getPassaporte()).isNull();
-        assertThat(dto.getNomeTitularCartao()).isEqualTo("Jose da Silva");
+        assertThat(dto.getNomeTitularCartao()).isEqualTo(nomeTeste);
         assertThat(dto.getNumeroCartaoMascarado()).isEqualTo("************5678");
     }
 
@@ -86,7 +86,7 @@ class DtoConversionTest {
 
         Ciclista ciclista = new Ciclista();
         ciclista.setId(10);
-        ciclista.setNomeCiclista("Maria Oliveira");
+        ciclista.setNomeCiclista(nomeTeste);
 
         Aluguel aluguel = new Aluguel(
                 101,
@@ -104,7 +104,7 @@ class DtoConversionTest {
         assertThat(dto.getHoraInicio()).isEqualTo(LocalDateTime.of(2024, 1, 15, 10, 0, 0));
         assertThat(dto.getStatus()).isEqualTo(Status.EM_ANDAMENTO);
         assertThat(dto.getIdCiclista()).isEqualTo(10);
-        assertThat(dto.getNomeCiclista()).isEqualTo("Maria Oliveira");
+        assertThat(dto.getNomeCiclista()).isEqualTo(nomeTeste);
     }
 
     @Test
@@ -138,7 +138,7 @@ class DtoConversionTest {
                 senhaTeste,
                 senhaTeste,
                 new Email("func@email.com"),
-                "Carlos Alberto",
+                nomeTeste,
                 45,
                 "Operador",
                 new Cpf("88877766655")
@@ -147,7 +147,7 @@ class DtoConversionTest {
         FuncionarioResponseDTO dto = FuncionarioResponseDTO.fromEntity(funcionario);
 
         assertThat(dto.getMatricula()).isEqualTo("F001");
-        assertThat(dto.getNome()).isEqualTo("Carlos Alberto");
+        assertThat(dto.getNome()).isEqualTo(nomeTeste);
         assertThat(dto.getEmail()).isEqualTo("func@email.com");
         assertThat(dto.getCpf()).isEqualTo("88877766655");
         assertThat(dto.getIdade()).isEqualTo(45);
