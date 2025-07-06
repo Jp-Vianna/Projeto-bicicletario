@@ -39,14 +39,15 @@ class AluguelServiceTest {
 
     @InjectMocks
     private AluguelService aluguelService;
-
     private CiclistaRequestDTO ciclistaRequestDTO;
+
+    final String nomeTeste = "João Viana";
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         ciclistaRequestDTO = new CiclistaRequestDTO();
-        ciclistaRequestDTO.setNomeCiclista("João Viana");
+        ciclistaRequestDTO.setNomeCiclista(nomeTeste);
         ciclistaRequestDTO.setEmail("joao.viana@example.com");
         ciclistaRequestDTO.setSenha("senha123");
         ciclistaRequestDTO.setConfirmacaoSenha("senha123");
@@ -54,7 +55,7 @@ class AluguelServiceTest {
         ciclistaRequestDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
         ciclistaRequestDTO.setCpf("111.222.333-96");
         CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
-        cartaoDto.setNomeTitular("João Viana");
+        cartaoDto.setNomeTitular(nomeTeste);
         cartaoDto.setNumero("1234567812345678");
         cartaoDto.setValidade(YearMonth.of(2025, 12));
         cartaoDto.setCvv("123");
@@ -72,7 +73,7 @@ class AluguelServiceTest {
         CiclistaResponseDTO response = aluguelService.criarCiclista(ciclistaRequestDTO);
 
         assertThat(response).isNotNull();
-        assertThat(response.getNome()).isEqualTo("João Viana");
+        assertThat(response.getNome()).isEqualTo(nomeTeste);
         assertThat(response.getEmail()).isEqualTo("joao.viana@example.com");
     }
 

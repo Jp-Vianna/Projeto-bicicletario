@@ -21,6 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DtoConversionTest {
 
+    final String nomeTeste = "Jose da Silva";
+    final String senhaTeste = "senha";
+
     @Test
     void deveConverterCiclistaRequestDtoParaEntidade() {
 
@@ -51,14 +54,14 @@ class DtoConversionTest {
     @Test
     void deveConverterEntidadeCiclistaParaResponseDto() {
 
-        CartaoDeCredito cartao = new CartaoDeCredito("1234567812345678", "Jose da Silva", YearMonth.of(2028, 12), "123");
+        CartaoDeCredito cartao = new CartaoDeCredito("1234567812345678", nomeTeste, YearMonth.of(2028, 12), "123");
         Ciclista ciclista = new Ciclista(
                 1,
                 Status.ATIVO,
                 LocalDate.of(1995, 5, 10),
                 "Jose da Silva",
                 new Cpf("11122233344"),
-                "senha",
+                senhaTeste,
                 Nacionalidade.BRASILEIRO,
                 new Email("jose.silva@email.com"),
                 "/path/foto",
@@ -132,8 +135,8 @@ class DtoConversionTest {
 
         Funcionario funcionario = new Funcionario(
                 "F001",
-                "senha",
-                "senha",
+                senhaTeste,
+                senhaTeste,
                 new Email("func@email.com"),
                 "Carlos Alberto",
                 45,
