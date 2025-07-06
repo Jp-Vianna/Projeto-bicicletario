@@ -13,12 +13,13 @@ class FuncionarioTest {
 
         Email email = new Email("funcionario@empresa.com");
         Cpf cpf = new Cpf("11122233344");
+        final String senhaTeste = "senha123";
 
         Funcionario funcionario = new Funcionario();
         funcionario.setMatricula("F001");
         funcionario.setNome("Felipe Machado");
-        funcionario.setSenha("senhaFunc");
-        funcionario.setConfirmacaoSenha("senhaFunc"); 
+        funcionario.setSenha(senhaTeste);
+        funcionario.setConfirmacaoSenha(senhaTeste); 
         funcionario.setEmail(email);
         funcionario.setIdade(30);
         funcionario.setFuncao("Operador");
@@ -27,8 +28,8 @@ class FuncionarioTest {
         assertNotNull(funcionario);
         assertEquals("F001", funcionario.getMatricula());
         assertEquals("Felipe Machado", funcionario.getNome());
-        assertEquals("senhaFunc", funcionario.getSenha());
-        assertEquals("senhaFunc", funcionario.getConfirmacaoSenha());
+        assertEquals(senhaTeste, funcionario.getSenha());
+        assertEquals(senhaTeste, funcionario.getConfirmacaoSenha());
         assertEquals("funcionario@empresa.com", funcionario.getEmail().getEndereco());
         assertEquals(30, funcionario.getIdade());
         assertEquals("Operador", funcionario.getFuncao());
@@ -40,11 +41,12 @@ class FuncionarioTest {
 
         Email email = new Email("admin@empresa.com");
         Cpf cpf = new Cpf("44455566677");
+        final String senhaTeste = "senha123";
 
         Funcionario funcionario = new Funcionario(
                 "F002",
-                "senhaAdmin",
-                "senhaAdmin",
+                senhaTeste,
+                senhaTeste,
                 email,
                 "Márcio Braga",
                 42,
@@ -55,7 +57,7 @@ class FuncionarioTest {
         assertNotNull(funcionario);
         assertEquals("F002", funcionario.getMatricula());
         assertEquals("Márcio Braga", funcionario.getNome());
-        assertEquals("senhaAdmin", funcionario.getSenha());
+        assertEquals(senhaTeste, funcionario.getSenha());
         assertEquals("admin@empresa.com", funcionario.getEmail().getEndereco());
         assertEquals(42, funcionario.getIdade());
         assertEquals("Mecânico", funcionario.getFuncao());

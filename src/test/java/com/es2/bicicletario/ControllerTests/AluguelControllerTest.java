@@ -32,6 +32,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+
+
 @WebMvcTest(AluguelController.class)
 class AluguelControllerTest {
 
@@ -46,12 +48,14 @@ class AluguelControllerTest {
 
     private CiclistaRequestDTO ciclistaRequestDTO;
     private CiclistaResponseDTO ciclistaResponseDTO;
+    final String nomeTeste = "Jorge Peixoto";
+    final String emailTeste = "nome.teste@xyzw.com";
 
     @BeforeEach
     void setUp() {
         ciclistaRequestDTO = new CiclistaRequestDTO();
-        ciclistaRequestDTO.setNomeCiclista("Jorge Peixoto");
-        ciclistaRequestDTO.setEmail("novo.ciclista@email.com");
+        ciclistaRequestDTO.setNomeCiclista(nomeTeste);
+        ciclistaRequestDTO.setEmail(emailTeste);
         ciclistaRequestDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
         ciclistaRequestDTO.setCpf("14998043777");
         ciclistaRequestDTO.setDataNascimento(LocalDate.of(2000, 1, 1));
@@ -59,7 +63,7 @@ class AluguelControllerTest {
         ciclistaRequestDTO.setConfirmacaoSenha("senhaForte123");
         
         CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
-        cartaoDto.setNomeTitular("Jorge P");
+        cartaoDto.setNomeTitular(nomeTeste);
         cartaoDto.setNumero("1111222233334444");
         cartaoDto.setValidade(YearMonth.now().plusYears(1));
         cartaoDto.setCvv("123");
@@ -67,12 +71,12 @@ class AluguelControllerTest {
 
         ciclistaResponseDTO = new CiclistaResponseDTO();
         ciclistaResponseDTO.setId(1);
-        ciclistaResponseDTO.setNome("Jorge Peixoto");
-        ciclistaResponseDTO.setEmail("novo.ciclista@email.com");
+        ciclistaResponseDTO.setNome(nomeTeste);
+        ciclistaResponseDTO.setEmail(emailTeste);
         ciclistaResponseDTO.setStatus(Status.AGUARDANDO_ATIVAMENTO);
         ciclistaResponseDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
         ciclistaResponseDTO.setCpf("14998043777");
-        ciclistaResponseDTO.setNomeTitularCartao("Jorge P");
+        ciclistaResponseDTO.setNomeTitularCartao(nomeTeste);
         ciclistaResponseDTO.setNumeroCartaoMascarado("************4444");
     }
     
@@ -85,8 +89,8 @@ class AluguelControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(ciclistaRequestDTO)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.nome").value("Jorge Peixoto"))
-        .andExpect(jsonPath("$.email").value("novo.ciclista@email.com"));
+        .andExpect(jsonPath("$.nome").value(nomeTeste))
+        .andExpect(jsonPath("$.email").value(emailTeste));
     }
 
     @Test
