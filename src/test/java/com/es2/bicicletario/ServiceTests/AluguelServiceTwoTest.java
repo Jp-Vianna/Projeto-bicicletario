@@ -108,7 +108,7 @@ class AluguelServiceTwoTest {
             when(aluguelRepository.findAllByCiclistaIdAndStatusIn(ciclistaBrasileiro.getId(), List.of(Status.EM_ANDAMENTO, Status.FINALIZADO_COM_COBRANCA_PENDENTE)))
                 .thenReturn(Collections.emptyList());
             
-            boolean permissao = aluguelService.permiteAluguel(ciclistaBrasileiro);
+            boolean permissao = aluguelService.permiteAluguel(ciclistaBrasileiro.getId());
 
             assertThat(permissao).isTrue();
         }
@@ -117,7 +117,7 @@ class AluguelServiceTwoTest {
         void permiteAluguel_ComCiclistaInativo_DeveRetornarFalse() {
             ciclistaBrasileiro.setStatus(Status.INATIVO);
             
-            boolean permissao = aluguelService.permiteAluguel(ciclistaBrasileiro);
+            boolean permissao = aluguelService.permiteAluguel(ciclistaBrasileiro.getId());
 
             assertThat(permissao).isFalse();
         }
@@ -129,7 +129,7 @@ class AluguelServiceTwoTest {
             when(aluguelRepository.findAllByCiclistaIdAndStatusIn(ciclistaBrasileiro.getId(), List.of(Status.EM_ANDAMENTO, Status.FINALIZADO_COM_COBRANCA_PENDENTE)))
                 .thenReturn(List.of(aluguelPendente));
 
-            boolean permissao = aluguelService.permiteAluguel(ciclistaBrasileiro);
+            boolean permissao = aluguelService.permiteAluguel(ciclistaBrasileiro.getId());
 
             assertThat(permissao).isFalse();
         }
