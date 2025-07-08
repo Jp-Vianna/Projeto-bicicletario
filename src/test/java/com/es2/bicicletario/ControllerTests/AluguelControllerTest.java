@@ -25,8 +25,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.mockito.ArgumentMatchers.eq; 
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,18 +33,37 @@ import java.time.YearMonth;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 
 
 @WebMvcTest(AluguelController.class)
 class AluguelControllerTest {
+
+    // Constantes para dados de teste
+    private static final String NOME_TESTE = "Jorge Peixoto";
+    private static final String EMAIL_TESTE = "nome.teste@xyzw.com";
+    private static final String CPF_TESTE = "14998043777";
+    private static final String SENHA_TESTE = "senhaForte123";
+    private static final String NUMERO_CARTAO_TESTE = "1111222233334444";
+    private static final String CARTAO_MASCARADO_TESTE = "************4444";
+    private static final String CVV_TESTE = "123";
+    private static final LocalDate DATA_NASCIMENTO_TESTE = LocalDate.of(2000, 1, 1);
+    private static final Integer CICLISTA_ID_TESTE = 1;
+
+    // Constantes para mensagens de erro
+    private static final String ERRO_ALUGUEL_NAO_AUTORIZADO = "O aluguel não foi autorizado.";
+    private static final String ERRO_ALUGUEL_ATIVO_NAO_ENCONTRADO = "Não encontrou alugueis ativos com essa bicicleta.";
+    private static final String ERRO_CICLISTA_NAO_ENCONTRADO = "Ciclista não encontrado.";
+    private static final String ERRO_CICLISTA_JA_ATIVO = "O ciclista não está inativo.";
+    private static final String ERRO_FUNCIONARIO_NAO_ENCONTRADO = "Funcionário não encontrado com a matrícula: F999";
+    private static final String ERRO_ATUALIZACAO_CICLISTA = "Ciclista não pode ser atualizado por algum motivo.";
+    private static final String ERRO_ATUALIZACAO_CARTAO = "Cartão de crédito inválido ou ciclista não pode atualizar.";
+
 
     @Autowired
     private MockMvc mockMvc;
@@ -59,60 +76,55 @@ class AluguelControllerTest {
 
     private CiclistaRequestDTO ciclistaRequestDTO;
     private CiclistaResponseDTO ciclistaResponseDTO;
-    final String nomeTeste = "Jorge Peixoto";
-    final String emailTeste = "nome.teste@xyzw.com";
 
     @BeforeEach
     void setUp() {
         ciclistaRequestDTO = new CiclistaRequestDTO();
-        ciclistaRequestDTO.setNomeCiclista(nomeTeste);
-        ciclistaRequestDTO.setEmail(emailTeste);
+        ciclistaRequestDTO.setNomeCiclista(NOME_TESTE);
+        ciclistaRequestDTO.setEmail(EMAIL_TESTE);
         ciclistaRequestDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
-        ciclistaRequestDTO.setCpf("14998043777");
-        ciclistaRequestDTO.setDataNascimento(LocalDate.of(2000, 1, 1));
-        ciclistaRequestDTO.setSenha("senhaForte123");
-        ciclistaRequestDTO.setConfirmacaoSenha("senhaForte123");
+        ciclistaRequestDTO.setCpf(CPF_TESTE);
+        ciclistaRequestDTO.setDataNascimento(DATA_NASCIMENTO_TESTE);
+        ciclistaRequestDTO.setSenha(SENHA_TESTE);
+        ciclistaRequestDTO.setConfirmacaoSenha(SENHA_TESTE);
         
         CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
-        cartaoDto.setNomeTitular(nomeTeste);
-        cartaoDto.setNumero("1111222233334444");
+        cartaoDto.setNomeTitular(NOME_TESTE);
+        cartaoDto.setNumero(NUMERO_CARTAO_TESTE);
         cartaoDto.setValidade(YearMonth.now().plusYears(1));
-        cartaoDto.setCvv("123");
+        cartaoDto.setCvv(CVV_TESTE);
         ciclistaRequestDTO.setCartaoDeCredito(cartaoDto);
 
         ciclistaResponseDTO = new CiclistaResponseDTO();
-        ciclistaResponseDTO.setId(1);
-        ciclistaResponseDTO.setNome(nomeTeste);
-        ciclistaResponseDTO.setEmail(emailTeste);
+        ciclistaResponseDTO.setId(CICLISTA_ID_TESTE);
+        ciclistaResponseDTO.setNome(NOME_TESTE);
+        ciclistaResponseDTO.setEmail(EMAIL_TESTE);
         ciclistaResponseDTO.setStatus(Status.AGUARDANDO_ATIVAMENTO);
         ciclistaResponseDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
-        ciclistaResponseDTO.setCpf("14998043777");
-        ciclistaResponseDTO.setNomeTitularCartao(nomeTeste);
-        ciclistaResponseDTO.setNumeroCartaoMascarado("************4444");
+        ciclistaResponseDTO.setCpf(CPF_TESTE);
+        ciclistaResponseDTO.setNomeTitularCartao(NOME_TESTE);
+        ciclistaResponseDTO.setNumeroCartaoMascarado(CARTAO_MASCARADO_TESTE);
     }
     
     @Test
     void criarCiclista_ComDadosValidos_DeveRetornarStatus201Created() throws Exception {
-
         given(aluguelService.criarCiclista(any(CiclistaRequestDTO.class))).willReturn(ciclistaResponseDTO);
 
         mockMvc.perform(post("/api/ciclistas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(ciclistaRequestDTO)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.nome").value(nomeTeste))
-        .andExpect(jsonPath("$.email").value(emailTeste));
+        .andExpect(jsonPath("$.nome").value(NOME_TESTE))
+        .andExpect(jsonPath("$.email").value(EMAIL_TESTE));
     }
 
     @Test
     void getCiclistaById_QuandoCiclistaExiste_DeveRetornarStatus200Ok() throws Exception {
-        final Integer ciclistaId = 1;
-
-        given(aluguelService.getCiclistaById(ciclistaId)).willReturn(Optional.of(ciclistaResponseDTO));
-        mockMvc.perform(get("/api/ciclistas/{id}", ciclistaId)
+        given(aluguelService.getCiclistaById(CICLISTA_ID_TESTE)).willReturn(Optional.of(ciclistaResponseDTO));
+        mockMvc.perform(get("/api/ciclistas/{id}", CICLISTA_ID_TESTE)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(ciclistaId))
+        .andExpect(jsonPath("$.id").value(CICLISTA_ID_TESTE))
         .andExpect(jsonPath("$.status").value(Status.AGUARDANDO_ATIVAMENTO.toString()));
     }
 
@@ -140,24 +152,22 @@ class AluguelControllerTest {
 
     @Test
     void realizarAluguel_QuandoCiclistaNaoPodeAlugar_DeveRetornarStatus400BadRequest() throws Exception {
-
         AluguelRequestDTO aluguelRequest = new AluguelRequestDTO();
         aluguelRequest.setIdCiclista(2);
         aluguelRequest.setIdTranca(102);
 
         given(aluguelService.realizarAluguel(any(AluguelRequestDTO.class)))
-            .willThrow(new RegraDeNegocioException("O aluguel não foi autorizado."));
+            .willThrow(new RegraDeNegocioException(ERRO_ALUGUEL_NAO_AUTORIZADO));
 
         mockMvc.perform(post("/api/alugueis")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(aluguelRequest)))
         .andExpect(status().isBadRequest())
-        .andExpect(content().string("O aluguel não foi autorizado."));
+        .andExpect(content().string(ERRO_ALUGUEL_NAO_AUTORIZADO));
     }
 
      @Test
     void realizarDevolucao_ComDadosValidos_DeveRetornarStatus201Created() throws Exception {
-
         DevolucaoRequestDTO devolucaoRequest = new DevolucaoRequestDTO();
         devolucaoRequest.setIdBicicleta(101);
         devolucaoRequest.setIdTranca(202);
@@ -180,32 +190,32 @@ class AluguelControllerTest {
 
     @Test
     void realizarDevolucao_QuandoBicicletaNaoTemAluguelAtivo_DeveRetornarStatus404NotFound() throws Exception {
- 
         DevolucaoRequestDTO devolucaoRequest = new DevolucaoRequestDTO();
         devolucaoRequest.setIdBicicleta(999);
         devolucaoRequest.setIdTranca(203);
 
-        String mensagemErro = "Não encontrou alugueis ativos com essa bicicleta.";
         given(aluguelService.realizarDevolucao(any(DevolucaoRequestDTO.class)))
-            .willThrow(new RuntimeException(mensagemErro));
+            .willThrow(new RuntimeException(ERRO_ALUGUEL_ATIVO_NAO_ENCONTRADO));
 
         mockMvc.perform(post("/api/devolucoes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(devolucaoRequest)))
         .andExpect(status().isNotFound())
-        .andExpect(content().string(mensagemErro));
+        .andExpect(content().string(ERRO_ALUGUEL_ATIVO_NAO_ENCONTRADO));
     }
 
     @Nested
     class AtualizarCiclistaControllerTest {
 
         private CiclistaRequestDTO ciclistaUpdateDTO;
+        private static final String NOME_ATUALIZADO = "Nome Atualizado";
+        private static final String EMAIL_ATUALIZADO = "novo.email@teste.com";
 
         @BeforeEach
         void setUp() {
             ciclistaUpdateDTO = new CiclistaRequestDTO();
-            ciclistaUpdateDTO.setNomeCiclista("Nome Atualizado");
-            ciclistaUpdateDTO.setEmail("novo.email@teste.com");
+            ciclistaUpdateDTO.setNomeCiclista(NOME_ATUALIZADO);
+            ciclistaUpdateDTO.setEmail(EMAIL_ATUALIZADO);
             ciclistaUpdateDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
             ciclistaUpdateDTO.setCpf("12345678901");
             ciclistaUpdateDTO.setDataNascimento(LocalDate.of(1999, 1, 1));
@@ -213,53 +223,48 @@ class AluguelControllerTest {
             ciclistaUpdateDTO.setConfirmacaoSenha("novaSenha");
 
             CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
-            cartaoDto.setNomeTitular("Nome Atualizado");
-            cartaoDto.setNumero("1111222233334444");
+            cartaoDto.setNomeTitular(NOME_ATUALIZADO);
+            cartaoDto.setNumero(NUMERO_CARTAO_TESTE);
             cartaoDto.setValidade(YearMonth.now().plusYears(1));
-            cartaoDto.setCvv("123");
+            cartaoDto.setCvv(CVV_TESTE);
             ciclistaUpdateDTO.setCartaoDeCredito(cartaoDto);
         }
 
         @Test
         void atualizarCiclista_ComDadosValidos_DeveRetornarStatus200Ok() throws Exception {
-            // Arrange
-            Integer ciclistaId = 1;
             CiclistaResponseDTO ciclistaAtualizadoResponse = new CiclistaResponseDTO();
-            ciclistaAtualizadoResponse.setId(ciclistaId);
-            ciclistaAtualizadoResponse.setNome("Nome Atualizado");
-            ciclistaAtualizadoResponse.setEmail("novo.email@teste.com");
+            ciclistaAtualizadoResponse.setId(CICLISTA_ID_TESTE);
+            ciclistaAtualizadoResponse.setNome(NOME_ATUALIZADO);
+            ciclistaAtualizadoResponse.setEmail(EMAIL_ATUALIZADO);
 
-            given(aluguelService.atualizarCiclista(eq(ciclistaId), any(CiclistaRequestDTO.class)))
+            given(aluguelService.atualizarCiclista(eq(CICLISTA_ID_TESTE), any(CiclistaRequestDTO.class)))
                 .willReturn(ciclistaAtualizadoResponse);
 
-            mockMvc.perform(put("/api/ciclista/{idCiclista}", ciclistaId)
+            mockMvc.perform(put("/api/ciclista/{idCiclista}", CICLISTA_ID_TESTE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(ciclistaUpdateDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(ciclistaId))
-                .andExpect(jsonPath("$.nome").value("Nome Atualizado"))
-                .andExpect(jsonPath("$.email").value("novo.email@teste.com"));
+                .andExpect(jsonPath("$.id").value(CICLISTA_ID_TESTE))
+                .andExpect(jsonPath("$.nome").value(NOME_ATUALIZADO))
+                .andExpect(jsonPath("$.email").value(EMAIL_ATUALIZADO));
         }
 
         @Test
         void atualizarCiclista_QuandoServiceLancaExcecao_DeveRetornarStatus400BadRequest() throws Exception {
-
             Integer ciclistaId = 2;
-            String mensagemErro = "Ciclista não pode ser atualizado por algum motivo.";
             
             given(aluguelService.atualizarCiclista(eq(ciclistaId), any(CiclistaRequestDTO.class)))
-                .willThrow(new RegraDeNegocioException(mensagemErro));
+                .willThrow(new RegraDeNegocioException(ERRO_ATUALIZACAO_CICLISTA));
 
             mockMvc.perform(put("/api/ciclista/{idCiclista}", ciclistaId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(ciclistaUpdateDTO)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(mensagemErro));
+                .andExpect(content().string(ERRO_ATUALIZACAO_CICLISTA));
         }
 
         @Test
         void atualizarCiclista_ComDadosInvalidosNoDTO_DeveRetornarStatus400BadRequest() throws Exception {
-
             Integer ciclistaId = 3;
             ciclistaUpdateDTO.setNomeCiclista(""); 
 
@@ -275,41 +280,34 @@ class AluguelControllerTest {
 
         @Test
         void ativarCiclista_QuandoSucesso_DeveRetornarStatus204NoContent() throws Exception {
+            doNothing().when(aluguelService).ativarCiclista(CICLISTA_ID_TESTE);
 
-            Integer ciclistaId = 1;
-
-            doNothing().when(aluguelService).ativarCiclista(ciclistaId);
-
-            mockMvc.perform(post("/api/ciclista/{idCiclista}/ativar", ciclistaId))
+            mockMvc.perform(post("/api/ciclista/{idCiclista}/ativar", CICLISTA_ID_TESTE))
                 .andExpect(status().isNoContent());
         }
 
         @Test
         void ativarCiclista_QuandoCiclistaJaEstaAtivo_DeveRetornarStatus400BadRequest() throws Exception {
-
             Integer ciclistaId = 2;
-            String mensagemErro = "O ciclista não está inativo.";
             
-            doThrow(new RegraDeNegocioException(mensagemErro))
+            doThrow(new RegraDeNegocioException(ERRO_CICLISTA_JA_ATIVO))
                 .when(aluguelService).ativarCiclista(ciclistaId);
 
             mockMvc.perform(post("/api/ciclista/{idCiclista}/ativar", ciclistaId))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(mensagemErro));
+                .andExpect(content().string(ERRO_CICLISTA_JA_ATIVO));
         }
 
         @Test
         void ativarCiclista_QuandoCiclistaNaoExiste_DeveRetornarStatus404NotFound() throws Exception {
-
             Integer ciclistaId = 999;
-            String mensagemErro = "Ciclista não encontrado.";
 
-            doThrow(new RuntimeException(mensagemErro))
+            doThrow(new RuntimeException(ERRO_CICLISTA_NAO_ENCONTRADO))
                 .when(aluguelService).ativarCiclista(ciclistaId);
 
             mockMvc.perform(post("/api/ciclista/{idCiclista}/ativar", ciclistaId))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(mensagemErro));
+                .andExpect(content().string(ERRO_CICLISTA_NAO_ENCONTRADO));
         }
     }
 
@@ -318,7 +316,6 @@ class AluguelControllerTest {
 
         @Test
         void existeEmail_QuandoEmailExiste_DeveRetornarStatus200OkComTrue() throws Exception {
-
             String emailExistente = "email.cadastrado@teste.com";
             given(aluguelService.existeEmail(emailExistente)).willReturn(true);
 
@@ -329,15 +326,13 @@ class AluguelControllerTest {
 
         @Test
         void existeEmail_QuandoEmailNaoExiste_DeveRetornarStatus404NotFound() throws Exception {
-
             String emailInexistente = "email.novo@teste.com";
-            String mensagemErro = "Ciclista não encontrado.";
             
-            given(aluguelService.existeEmail(emailInexistente)).willThrow(new RuntimeException(mensagemErro));
+            given(aluguelService.existeEmail(emailInexistente)).willThrow(new RuntimeException(ERRO_CICLISTA_NAO_ENCONTRADO));
 
             mockMvc.perform(get("/api/ciclistas/verificar-email/{email}", emailInexistente))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(mensagemErro));
+                .andExpect(content().string(ERRO_CICLISTA_NAO_ENCONTRADO));
         }
     }
 
@@ -350,18 +345,16 @@ class AluguelControllerTest {
         void setUp() {
             cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
             cartaoDto.setNomeTitular("Titular Válido");
-            cartaoDto.setNumero("1111222233334444");
+            cartaoDto.setNumero(NUMERO_CARTAO_TESTE);
             cartaoDto.setValidade(YearMonth.now().plusYears(2));
-            cartaoDto.setCvv("123");
+            cartaoDto.setCvv(CVV_TESTE);
         }
 
         @Test
         void atualizarCartaoDeCredito_QuandoSucesso_DeveRetornarStatus204NoContent() throws Exception {
+            doNothing().when(aluguelService).atualizarCartaoDeCredito(eq(CICLISTA_ID_TESTE), any(CiclistaRequestDTO.CartaoDeCreditoDto.class));
 
-            Integer ciclistaId = 1;
-            doNothing().when(aluguelService).atualizarCartaoDeCredito(eq(ciclistaId), any(CiclistaRequestDTO.CartaoDeCreditoDto.class));
-
-            mockMvc.perform(put("/api/cartao-de-credito/{idCiclista}", ciclistaId)
+            mockMvc.perform(put("/api/cartao-de-credito/{idCiclista}", CICLISTA_ID_TESTE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(cartaoDto)))
                 .andExpect(status().isNoContent());
@@ -369,7 +362,6 @@ class AluguelControllerTest {
 
         @Test
         void atualizarCartaoDeCredito_QuandoDtoInvalido_DeveRetornarStatus400BadRequest() throws Exception {
-
             Integer ciclistaId = 2;
             cartaoDto.setNumero("123"); 
 
@@ -381,18 +373,16 @@ class AluguelControllerTest {
         
         @Test
         void atualizarCartaoDeCredito_QuandoServiceLancaExcecao_DeveRetornarStatus400BadRequest() throws Exception {
-
             Integer ciclistaId = 3;
-            String mensagemErro = "Cartão de crédito inválido ou ciclista não pode atualizar.";
             
-            doThrow(new RegraDeNegocioException(mensagemErro))
+            doThrow(new RegraDeNegocioException(ERRO_ATUALIZACAO_CARTAO))
                 .when(aluguelService).atualizarCartaoDeCredito(eq(ciclistaId), any(CiclistaRequestDTO.CartaoDeCreditoDto.class));
 
             mockMvc.perform(put("/api/cartao-de-credito/{idCiclista}", ciclistaId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(cartaoDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(mensagemErro));
+                .andExpect(content().string(ERRO_ATUALIZACAO_CARTAO));
         }
     }
 
@@ -401,22 +391,19 @@ class AluguelControllerTest {
 
         @Test
         void getBicicletaAlugada_QuandoAluguelExiste_DeveRetornarStatus200OkComIdBicicleta() throws Exception {
-
-            Integer ciclistaId = 1;
             Integer idBicicleta = 101;
-            given(aluguelService.getBicicletaAlugada(ciclistaId)).willReturn(idBicicleta);
+            given(aluguelService.getBicicletaAlugada(CICLISTA_ID_TESTE)).willReturn(idBicicleta);
 
-            mockMvc.perform(get("/api/ciclista/{idCiclista}/bicicletaalugada", ciclistaId))
+            mockMvc.perform(get("/api/ciclista/{idCiclista}/bicicletaalugada", CICLISTA_ID_TESTE))
                 .andExpect(status().isOk())
                 .andExpect(content().string(String.valueOf(idBicicleta)));
         }
 
         @Test
         void getBicicletaAlugada_QuandoAluguelNaoExiste_DeveRetornarStatus404NotFound() throws Exception {
-
             Integer ciclistaId = 2;
-
-            given(aluguelService.getBicicletaAlugada(ciclistaId)).willThrow(new RuntimeException("O ciclista não tem aluguéis no momento."));
+            String erroMsg = "O ciclista não tem aluguéis no momento.";
+            given(aluguelService.getBicicletaAlugada(ciclistaId)).willThrow(new RuntimeException(erroMsg));
 
             mockMvc.perform(get("/api/ciclista/{idCiclista}/bicicletaalugada", ciclistaId))
                 .andExpect(status().isNotFound());
@@ -428,7 +415,6 @@ class AluguelControllerTest {
 
         @Test
         void getFuncionarioById_QuandoFuncionarioExiste_DeveRetornarStatus200OkComDto() throws Exception {
-
             String matricula = "F123";
             FuncionarioResponseDTO funcionarioDto = new FuncionarioResponseDTO();
             funcionarioDto.setMatricula(matricula);
@@ -445,7 +431,6 @@ class AluguelControllerTest {
 
         @Test
         void getFuncionarioById_QuandoFuncionarioNaoExiste_DeveRetornarStatus404NotFound() throws Exception {
-
             String matriculaInexistente = "F999";
             given(aluguelService.getFuncionarioById(matriculaInexistente)).willReturn(Optional.empty());
 
@@ -472,7 +457,6 @@ class AluguelControllerTest {
 
         @Test
         void atualizarFuncionario_ComDadosValidos_DeveRetornarStatus200OkComDto() throws Exception {
-
             String matricula = "F123";
             FuncionarioResponseDTO responseDto = new FuncionarioResponseDTO();
             responseDto.setMatricula(matricula);
@@ -491,23 +475,20 @@ class AluguelControllerTest {
 
         @Test
         void atualizarFuncionario_QuandoFuncionarioNaoExiste_DeveRetornarStatus404NotFound() throws Exception {
-
             String matricula = "F999";
-            String mensagemErro = "Funcionário não encontrado com a matrícula: " + matricula;
 
             given(aluguelService.atualizarFuncionario(eq(matricula), any(FuncionarioRequestDTO.class)))
-                .willThrow(new RegraDeNegocioException(mensagemErro));
+                .willThrow(new RegraDeNegocioException(ERRO_FUNCIONARIO_NAO_ENCONTRADO));
 
             mockMvc.perform(put("/api/funcionarios/{matricula}", matricula)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(funcionarioRequestDTO)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(mensagemErro));
+                .andExpect(content().string(ERRO_FUNCIONARIO_NAO_ENCONTRADO));
         }
         
         @Test
         void atualizarFuncionario_ComDadosInvalidosNoDto_DeveRetornarStatus400BadRequest() throws Exception {
-
             String matricula = "F456";
             funcionarioRequestDTO.setNome("");
 
@@ -539,7 +520,6 @@ class AluguelControllerTest {
 
         @Test
         void criarFuncionario_ComDadosValidos_DeveRetornarStatus201Created() throws Exception {
-
             given(aluguelService.criarFuncionario(any(Funcionario.class))).willReturn(novoFuncionario);
 
             mockMvc.perform(post("/api/funcionarios")
@@ -552,7 +532,6 @@ class AluguelControllerTest {
 
         @Test
         void criarFuncionario_QuandoServiceLancaExcecao_DeveRetornarStatus400BadRequest() throws Exception {
-
             String mensagemErro = "Matrícula já existe.";
             given(aluguelService.criarFuncionario(any(Funcionario.class)))
                 .willThrow(new RegraDeNegocioException(mensagemErro));
@@ -570,7 +549,6 @@ class AluguelControllerTest {
 
         @Test
         void deletarFuncionario_QuandoServiceLancaExcecao_DeveRetornarStatus500InternalServerError() throws Exception {
-            // Arrange
             String matricula = "F999";
             String mensagemErro = "Erro ao deletar funcionário.";
 
@@ -588,18 +566,15 @@ class AluguelControllerTest {
 
         @Test
         void permitirAluguel_QuandoPermitido_DeveRetornarStatus200OkComTrue() throws Exception {
+            given(aluguelService.permiteAluguel(CICLISTA_ID_TESTE)).willReturn(true);
 
-            Integer ciclistaId = 1;
-            given(aluguelService.permiteAluguel(ciclistaId)).willReturn(true);
-
-            mockMvc.perform(get("/api/ciclista/{idCiclista}/permitiraluguel", ciclistaId))
+            mockMvc.perform(get("/api/ciclista/{idCiclista}/permitiraluguel", CICLISTA_ID_TESTE))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
         }
 
         @Test
         void permitirAluguel_QuandoNaoPermitido_DeveRetornarStatus200OkComFalse() throws Exception {
-
             Integer ciclistaId = 2;
             given(aluguelService.permiteAluguel(ciclistaId)).willReturn(false);
 
@@ -610,11 +585,9 @@ class AluguelControllerTest {
 
         @Test
         void permitirAluguel_QuandoCiclistaNaoExiste_DeveRetornarStatus404NotFound() throws Exception {
-   
             Integer ciclistaId = 999;
-            String mensagemErro = "Ciclista não encontrado.";
             
-            given(aluguelService.permiteAluguel(ciclistaId)).willThrow(new RuntimeException(mensagemErro));
+            given(aluguelService.permiteAluguel(ciclistaId)).willThrow(new RuntimeException(ERRO_CICLISTA_NAO_ENCONTRADO));
 
             mockMvc.perform(get("/api/ciclista/{idCiclista}/permitiraluguel", ciclistaId))
                 .andExpect(status().isNotFound());

@@ -36,6 +36,24 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AluguelServiceTwoTest {
 
+    // Constantes para dados do CiclistaRequestDTO
+    private static final String NOME_REQUEST = "Joana Dark";
+    private static final String EMAIL_REQUEST = "joana.dark@email.com";
+    private static final LocalDate DATA_NASCIMENTO_REQUEST = LocalDate.of(1992, 8, 20);
+    private static final String SENHA_REQUEST = "senha123";
+    private static final String NUMERO_CARTAO_REQUEST = "1234567812345678";
+    private static final String NOME_TITULAR_CARTAO_REQUEST = "Joana D.";
+    private static final String CVV_CARTAO_REQUEST = "321";
+
+    // Constantes para dados do Ciclista (entidade mockada)
+    private static final String NOME_CICLISTA_BR = "Ciclista Ativo Brasileiro";
+    private static final String CPF_CICLISTA_BR = "00270625709";
+    private static final String EMAIL_CICLISTA_BR = "ciclista.br@email.com";
+    private static final String NUMERO_CARTAO_CICLISTA_BR = "1111222233334444";
+    private static final String NOME_TITULAR_CARTAO_CICLISTA_BR = "Ciclista BR";
+    private static final String CVV_CARTAO_CICLISTA_BR = "123";
+
+
     @InjectMocks
     private AluguelService aluguelService;
 
@@ -47,7 +65,7 @@ class AluguelServiceTwoTest {
 
     @Mock
     private DevolucaoRepository devolucaoRepository;
-    
+
     private CiclistaRequestDTO ciclistaRequestDTO;
     private Ciclista ciclistaBrasileiro;
 
@@ -55,27 +73,27 @@ class AluguelServiceTwoTest {
     void setUp() {
         
         ciclistaRequestDTO = new CiclistaRequestDTO();
-        ciclistaRequestDTO.setNomeCiclista("Joana Dark");
-        ciclistaRequestDTO.setEmail("joana.dark@email.com");
-        ciclistaRequestDTO.setDataNascimento(LocalDate.of(1992, 8, 20));
-        ciclistaRequestDTO.setSenha("senha123");
-        ciclistaRequestDTO.setConfirmacaoSenha("senha123");
+        ciclistaRequestDTO.setNomeCiclista(NOME_REQUEST);
+        ciclistaRequestDTO.setEmail(EMAIL_REQUEST);
+        ciclistaRequestDTO.setDataNascimento(DATA_NASCIMENTO_REQUEST);
+        ciclistaRequestDTO.setSenha(SENHA_REQUEST);
+        ciclistaRequestDTO.setConfirmacaoSenha(SENHA_REQUEST);
         
         CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
-        cartaoDto.setNumero("1234567812345678");
-        cartaoDto.setNomeTitular("Joana D.");
+        cartaoDto.setNumero(NUMERO_CARTAO_REQUEST);
+        cartaoDto.setNomeTitular(NOME_TITULAR_CARTAO_REQUEST);
         cartaoDto.setValidade(YearMonth.now().plusYears(2));
-        cartaoDto.setCvv("321");
+        cartaoDto.setCvv(CVV_CARTAO_REQUEST);
         ciclistaRequestDTO.setCartaoDeCredito(cartaoDto);
 
         ciclistaBrasileiro = new Ciclista();
         ciclistaBrasileiro.setId(1);
-        ciclistaBrasileiro.setNomeCiclista("Ciclista Ativo Brasileiro");
+        ciclistaBrasileiro.setNomeCiclista(NOME_CICLISTA_BR);
         ciclistaBrasileiro.setStatus(Status.ATIVO);
         ciclistaBrasileiro.setNacionalidade(Nacionalidade.BRASILEIRO);
-        ciclistaBrasileiro.setCpf(new Cpf("00270625709"));
-        ciclistaBrasileiro.setEmail(new Email("ciclista.br@email.com"));
-        ciclistaBrasileiro.setCartao(new CartaoDeCredito("1111222233334444", "Ciclista BR", YearMonth.now().plusYears(3), "123"));
+        ciclistaBrasileiro.setCpf(new Cpf(CPF_CICLISTA_BR));
+        ciclistaBrasileiro.setEmail(new Email(EMAIL_CICLISTA_BR));
+        ciclistaBrasileiro.setCartao(new CartaoDeCredito(NUMERO_CARTAO_CICLISTA_BR, NOME_TITULAR_CARTAO_CICLISTA_BR, YearMonth.now().plusYears(3), CVV_CARTAO_CICLISTA_BR));
     }
 
     @Nested
@@ -464,8 +482,8 @@ class AtualizarCartaoDeCreditoTest {
             CartaoDeCredito cartao = aluguelService.getCartaoDeCredito(ciclistaBrasileiro.getId());
 
             assertThat(cartao).isNotNull();
-            assertThat(cartao.getNumeroCartao()).isEqualTo("1111222233334444");
-            assertThat(cartao.getNomeNoCartao()).isEqualTo("Ciclista BR");
+            assertThat(cartao.getNumeroCartao()).isEqualTo(NUMERO_CARTAO_CICLISTA_BR);
+            assertThat(cartao.getNomeNoCartao()).isEqualTo(NOME_TITULAR_CARTAO_CICLISTA_BR);
         }
 
         @Test
