@@ -36,6 +36,17 @@ import static org.mockito.Mockito.when;
 
 class AluguelServiceTest {
 
+    // Constantes para os dados de teste
+    private static final String NOME_TESTE = "João Viana";
+    private static final String EMAIL_TESTE = "joao.viana@example.com";
+    private static final String SENHA_TESTE = "senha123";
+    private static final LocalDate DATA_NASCIMENTO_TESTE = LocalDate.of(1990, 1, 1);
+    private static final Nacionalidade NACIONALIDADE_TESTE = Nacionalidade.BRASILEIRO;
+    private static final String CPF_TESTE = "111.222.333-96";
+    private static final String NUMERO_CARTAO_TESTE = "1234567812345678";
+    private static final YearMonth VALIDADE_CARTAO_TESTE = YearMonth.of(2025, 12);
+    private static final String CVV_CARTAO_TESTE = "123";
+
     @Mock
     private FuncionarioRepository funcionarioRepository;
     @Mock
@@ -49,24 +60,22 @@ class AluguelServiceTest {
     private AluguelService aluguelService;
     private CiclistaRequestDTO ciclistaRequestDTO;
 
-    final String nomeTeste = "João Viana";
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         ciclistaRequestDTO = new CiclistaRequestDTO();
-        ciclistaRequestDTO.setNomeCiclista(nomeTeste);
-        ciclistaRequestDTO.setEmail("joao.viana@example.com");
-        ciclistaRequestDTO.setSenha("senha123");
-        ciclistaRequestDTO.setConfirmacaoSenha("senha123");
-        ciclistaRequestDTO.setDataNascimento(LocalDate.of(1990, 1, 1));
-        ciclistaRequestDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
-        ciclistaRequestDTO.setCpf("111.222.333-96");
+        ciclistaRequestDTO.setNomeCiclista(NOME_TESTE);
+        ciclistaRequestDTO.setEmail(EMAIL_TESTE);
+        ciclistaRequestDTO.setSenha(SENHA_TESTE);
+        ciclistaRequestDTO.setConfirmacaoSenha(SENHA_TESTE);
+        ciclistaRequestDTO.setDataNascimento(DATA_NASCIMENTO_TESTE);
+        ciclistaRequestDTO.setNacionalidade(NACIONALIDADE_TESTE);
+        ciclistaRequestDTO.setCpf(CPF_TESTE);
         CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
-        cartaoDto.setNomeTitular(nomeTeste);
-        cartaoDto.setNumero("1234567812345678");
-        cartaoDto.setValidade(YearMonth.of(2025, 12));
-        cartaoDto.setCvv("123");
+        cartaoDto.setNomeTitular(NOME_TESTE);
+        cartaoDto.setNumero(NUMERO_CARTAO_TESTE);
+        cartaoDto.setValidade(VALIDADE_CARTAO_TESTE);
+        cartaoDto.setCvv(CVV_CARTAO_TESTE);
         ciclistaRequestDTO.setCartaoDeCredito(cartaoDto);
     }
 
@@ -81,8 +90,8 @@ class AluguelServiceTest {
         CiclistaResponseDTO response = aluguelService.criarCiclista(ciclistaRequestDTO);
 
         assertThat(response).isNotNull();
-        assertThat(response.getNome()).isEqualTo(nomeTeste);
-        assertThat(response.getEmail()).isEqualTo("joao.viana@example.com");
+        assertThat(response.getNome()).isEqualTo(NOME_TESTE);
+        assertThat(response.getEmail()).isEqualTo(EMAIL_TESTE);
     }
 
     @Test
