@@ -116,6 +116,15 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>com/es2/bicicletario/repository/**/*.class</exclude>
+
+                        <exclude>com/es2/bicicletario/validation/**/*.class</exclude>
+
+                        <exclude>com/es2/bicicletario/BicicletarioApplication.class</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
