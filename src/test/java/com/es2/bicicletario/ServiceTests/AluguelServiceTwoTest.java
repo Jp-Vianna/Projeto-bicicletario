@@ -1,6 +1,8 @@
 package com.es2.bicicletario.ServiceTests;
 
+import com.es2.bicicletario.dto.AluguelResponseDTO;
 import com.es2.bicicletario.dto.CiclistaRequestDTO;
+import com.es2.bicicletario.dto.CiclistaResponseDTO;
 import com.es2.bicicletario.dto.DevolucaoRequestDTO;
 import com.es2.bicicletario.dto.DevolucaoResponseDTO;
 import com.es2.bicicletario.entity.*;
@@ -18,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.Collections;
 import java.util.List;
@@ -107,6 +110,8 @@ class AluguelServiceTwoTest {
         void permiteAluguel_ComCiclistaAtivoESemPendencias_DeveRetornarTrue() {
             when(aluguelRepository.findAllByCiclistaIdAndStatusIn(ciclistaBrasileiro.getId(), List.of(Status.EM_ANDAMENTO, Status.FINALIZADO_COM_COBRANCA_PENDENTE)))
                 .thenReturn(Collections.emptyList());
+
+            when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
             
             boolean permissao = aluguelService.permiteAluguel(ciclistaBrasileiro.getId());
 
@@ -116,6 +121,8 @@ class AluguelServiceTwoTest {
         @Test
         void permiteAluguel_ComCiclistaInativo_DeveRetornarFalse() {
             ciclistaBrasileiro.setStatus(Status.INATIVO);
+
+            when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
             
             boolean permissao = aluguelService.permiteAluguel(ciclistaBrasileiro.getId());
 
@@ -126,8 +133,11 @@ class AluguelServiceTwoTest {
         void permiteAluguel_ComAluguelEmAndamento_DeveRetornarFalse() {
             Aluguel aluguelPendente = new Aluguel();
             aluguelPendente.setStatus(Status.EM_ANDAMENTO);
+            
             when(aluguelRepository.findAllByCiclistaIdAndStatusIn(ciclistaBrasileiro.getId(), List.of(Status.EM_ANDAMENTO, Status.FINALIZADO_COM_COBRANCA_PENDENTE)))
                 .thenReturn(List.of(aluguelPendente));
+
+            when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
 
             boolean permissao = aluguelService.permiteAluguel(ciclistaBrasileiro.getId());
 
@@ -185,7 +195,7 @@ class AluguelServiceTwoTest {
         }
     }
 
-     @Nested
+    @Nested
     class CriacaoDeCiclistaIntegridadeTest {
 
         @Test
@@ -249,6 +259,312 @@ class AluguelServiceTwoTest {
             assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
                 .isInstanceOf(RegraDeNegocioException.class)
                 .hasMessage("Este Passaporte já está em uso.");
+        }
+    }
+
+    @Nested
+    class GetAluguelByIdBicicletaTest {
+
+        @Test
+        void getAluguelByIdBicicleta_QuandoAluguelAtivoExiste_DeveRetornarResponseDTO() {
+
+            Integer idBicicleta = 101;
+
+            Aluguel aluguelAtivo = new Aluguel(
+                50, 
+                idBicicleta, 
+                LocalDateTime.now(), 
+                ciclistaBrasileiro, 
+                202, 
+                Status.EM_ANDAMENTO
+            );
+
+            when(aluguelRepository.findByIdBicicletaAndStatus(idBicicleta, Status.EM_ANDAMENTO))
+                .thenReturn(Optional.of(aluguelAtivo));
+
+            AluguelResponseDTO response = aluguelService.getAluguelByIdBicicleta(idBicicleta);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getIdBicicleta()).isEqualTo(idBicicleta);
+            assertThat(response.getStatus()).isEqualTo(Status.EM_ANDAMENTO);
+            assertThat(response.getIdCiclista()).isEqualTo(ciclistaBrasileiro.getId());
+        }
+
+        @Test
+        void getAluguelByIdBicicleta_QuandoAluguelNaoExiste_DeveLancarExcecao() {
+
+            Integer idBicicleta = 999;
+
+            when(aluguelRepository.findByIdBicicletaAndStatus(idBicicleta, Status.EM_ANDAMENTO))
+                .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> aluguelService.getAluguelByIdBicicleta(idBicicleta))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Nenhum aluguel ativo com esta bicicleta.");
+        }
+    }
+
+    @Nested
+    class GetBicicletaAlugadaTest {
+
+        @Test
+        void getBicicletaAlugada_QuandoCiclistaPossuiAluguelAtivo_DeveRetornarIdBicicleta() {
+
+            Integer idBicicleta = 101;
+            Aluguel aluguelAtivo = new Aluguel();
+            aluguelAtivo.setIdBicicleta(idBicicleta);
+            aluguelAtivo.setCiclista(ciclistaBrasileiro);
+            aluguelAtivo.setStatus(Status.EM_ANDAMENTO);
+            
+            when(aluguelRepository.findByCiclistaIdAndStatus(ciclistaBrasileiro.getId(), Status.EM_ANDAMENTO))
+                .thenReturn(Optional.of(aluguelAtivo));
+
+            Integer idBicicletaAlugada = aluguelService.getBicicletaAlugada(ciclistaBrasileiro.getId());
+
+            assertThat(idBicicletaAlugada).isEqualTo(idBicicleta);
+        }
+
+        @Test
+        void getBicicletaAlugada_QuandoCiclistaNaoPossuiAluguelAtivo_DeveLancarExcecao() {
+
+            when(aluguelRepository.findByCiclistaIdAndStatus(ciclistaBrasileiro.getId(), Status.EM_ANDAMENTO))
+                .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> aluguelService.getBicicletaAlugada(ciclistaBrasileiro.getId()))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("O ciclista não tem aluguéis no momento.");
+        }
+    }
+
+    @Nested
+class ExisteEmailTest {
+
+    @Test
+    void existeEmail_QuandoEmailExiste_DeveRetornarTrue() {
+
+        String emailExistente = "email.existente@teste.com";
+        when(ciclistaRepository.findByEmailEndereco(emailExistente)).thenReturn(Optional.of(new Ciclista()));
+
+        Boolean resultado = aluguelService.existeEmail(emailExistente);
+
+        assertThat(resultado).isTrue();
+    }
+
+    @Test
+    void existeEmail_QuandoEmailNaoExiste_DeveLancarExcecao() {
+
+        String emailInexistente = "email.inexistente@teste.com";
+        when(ciclistaRepository.findByEmailEndereco(emailInexistente)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> aluguelService.existeEmail(emailInexistente))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Ciclista não encontrado.");
+        }
+    }
+
+    @Nested
+class AtivarCiclistaTest {
+
+    @Test
+    void ativarCiclista_QuandoCiclistaEstaInativo_DeveMudarStatusParaAtivoESalvar() {
+ 
+        ciclistaBrasileiro.setStatus(Status.INATIVO);
+        when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
+        when(ciclistaRepository.save(any(Ciclista.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        aluguelService.ativarCiclista(ciclistaBrasileiro.getId());
+
+        verify(ciclistaRepository).save(argThat(ciclistaSalvo ->
+            ciclistaSalvo.getStatus() == Status.ATIVO &&
+            ciclistaSalvo.getId().equals(ciclistaBrasileiro.getId())
+        ));
+    }
+
+    @Test
+    void ativarCiclista_QuandoCiclistaJaEstaAtivo_DeveLancarExcecao() {
+
+        ciclistaBrasileiro.setStatus(Status.ATIVO);
+        when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
+
+        assertThatThrownBy(() -> aluguelService.ativarCiclista(ciclistaBrasileiro.getId()))
+            .isInstanceOf(RegraDeNegocioException.class)
+            .hasMessage("O ciclista não está inativo.");
+    }
+
+    @Test
+    void ativarCiclista_QuandoCiclistaNaoExiste_DeveLancarExcecao() {
+
+        Integer idInexistente = 999;
+        when(ciclistaRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> aluguelService.ativarCiclista(idInexistente))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Ciclista não encontrado.");
+        }
+    }
+    
+    @Nested
+class AtualizarCartaoDeCreditoTest {
+
+    private CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto;
+
+    @BeforeEach
+    void setUp() {
+        cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
+        cartaoDto.setNomeTitular("Novo Titular");
+        cartaoDto.setNumero("8888777766665555");
+        cartaoDto.setValidade(YearMonth.now().plusYears(5));
+        cartaoDto.setCvv("987");
+    }
+
+    @Test
+    void atualizarCartaoDeCredito_ComDadosValidos_DeveAtualizarCartaoDoCiclista() {
+
+        when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
+        when(ciclistaRepository.save(any(Ciclista.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        aluguelService.atualizarCartaoDeCredito(ciclistaBrasileiro.getId(), cartaoDto);
+
+        verify(ciclistaRepository).save(argThat(ciclistaSalvo ->
+            ciclistaSalvo.getCartao().getNumeroCartao().equals("8888777766665555") &&
+            ciclistaSalvo.getCartao().getNomeNoCartao().equals("Novo Titular")
+        ));
+    }
+
+    @Test
+    void atualizarCartaoDeCredito_QuandoDtoEhNulo_DeveLancarExcecao() {
+
+        when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
+
+        assertThatThrownBy(() -> aluguelService.atualizarCartaoDeCredito(ciclistaBrasileiro.getId(), null))
+            .isInstanceOf(RegraDeNegocioException.class)
+            .hasMessage("Os dados do cartão de crédito não podem ser nulos.");
+    }
+
+    @Test
+    void atualizarCartaoDeCredito_QuandoCiclistaNaoExiste_DeveLancarExcecao() {
+
+        Integer idInexistente = 999;
+        when(ciclistaRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> aluguelService.atualizarCartaoDeCredito(idInexistente, cartaoDto))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Ciclista não encontrado.");
+        }
+    }
+
+    @Nested
+    class GetCartaoDeCreditoTest {
+
+        @Test
+        void getCartaoDeCredito_QuandoCiclistaExiste_DeveRetornarCartao() {
+
+            when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
+            
+            CartaoDeCredito cartao = aluguelService.getCartaoDeCredito(ciclistaBrasileiro.getId());
+
+            assertThat(cartao).isNotNull();
+            assertThat(cartao.getNumeroCartao()).isEqualTo("1111222233334444");
+            assertThat(cartao.getNomeNoCartao()).isEqualTo("Ciclista BR");
+        }
+
+        @Test
+        void getCartaoDeCredito_QuandoCiclistaNaoExiste_DeveLancarExcecao() {
+
+            Integer idInexistente = 999;
+            when(ciclistaRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> aluguelService.getCartaoDeCredito(idInexistente))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Ciclista não encontrado.");
+        }
+    }
+
+    @Nested
+    class GetCiclistaByIdTest {
+
+        @Test
+        void getCiclistaById_QuandoCiclistaExiste_DeveRetornarOptionalComDto() {
+
+            when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
+
+            Optional<CiclistaResponseDTO> responseOptional = aluguelService.getCiclistaById(ciclistaBrasileiro.getId());
+
+            assertThat(responseOptional).isPresent();
+            responseOptional.ifPresent(dto -> {
+                assertThat(dto.getId()).isEqualTo(ciclistaBrasileiro.getId());
+                assertThat(dto.getNome()).isEqualTo(ciclistaBrasileiro.getNomeCiclista());
+                assertThat(dto.getEmail()).isEqualTo(ciclistaBrasileiro.getEmail().getEndereco());
+            });
+        }
+
+        @Test
+        void getCiclistaById_QuandoCiclistaNaoExiste_DeveRetornarOptionalVazio() {
+
+            Integer idInexistente = 999;
+            when(ciclistaRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+            Optional<CiclistaResponseDTO> responseOptional = aluguelService.getCiclistaById(idInexistente);
+
+            assertThat(responseOptional).isEmpty();
+        }
+    }
+
+    @Nested
+    class AtualizarCiclistaTest {
+
+        private CiclistaRequestDTO ciclistaUpdateDto;
+
+        @BeforeEach
+        void setUp() {
+            ciclistaUpdateDto = new CiclistaRequestDTO();
+            ciclistaUpdateDto.setNomeCiclista("Nome Atualizado");
+            ciclistaUpdateDto.setDataNascimento(LocalDate.of(1995, 10, 10));
+            ciclistaUpdateDto.setEmail("email.atualizado@teste.com");
+            ciclistaUpdateDto.setSenha("novaSenha123");
+            ciclistaUpdateDto.setConfirmacaoSenha("novaSenha123");
+            ciclistaUpdateDto.setCartaoDeCredito(ciclistaRequestDTO.getCartaoDeCredito());
+        }
+
+        @Test
+        void atualizarCiclista_QuandoCiclistaNaoExiste_DeveLancarExcecao() {
+
+            Integer idInexistente = 999;
+            when(ciclistaRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> aluguelService.atualizarCiclista(idInexistente, ciclistaUpdateDto))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Ciclista não encontrado.");
+        }
+
+        @Test
+        void atualizarCiclista_ParaBrasileiroComCpfInvalido_DeveLancarExcecao() {
+
+            ciclistaUpdateDto.setNacionalidade(Nacionalidade.BRASILEIRO);
+            ciclistaUpdateDto.setCpf("11111111111"); // CPF inválido
+            when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
+
+            assertThatThrownBy(() -> aluguelService.atualizarCiclista(ciclistaBrasileiro.getId(), ciclistaUpdateDto))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessage("Para brasileiros, um CPF válido é obrigatório.");
+        }
+
+        @Test
+        void atualizarCiclista_ParaEstrangeiroComPassaporteInvalido_DeveLancarExcecao() {
+
+            ciclistaUpdateDto.setNacionalidade(Nacionalidade.ESTRANGEIRO);
+            
+            CiclistaRequestDTO.PassaporteDto passaporteExpirado = new CiclistaRequestDTO.PassaporteDto();
+            passaporteExpirado.setNumero("PASS123");
+            passaporteExpirado.setPais("EUA");
+            passaporteExpirado.setDataDeValidade(LocalDate.now().minusDays(1)); 
+            ciclistaUpdateDto.setPassaporte(passaporteExpirado);
+
+            when(ciclistaRepository.findById(ciclistaBrasileiro.getId())).thenReturn(Optional.of(ciclistaBrasileiro));
+            
+            assertThatThrownBy(() -> aluguelService.atualizarCiclista(ciclistaBrasileiro.getId(), ciclistaUpdateDto))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessage("Para estrangeiros, um passaporte válido é obrigatório.");
         }
     }
 }

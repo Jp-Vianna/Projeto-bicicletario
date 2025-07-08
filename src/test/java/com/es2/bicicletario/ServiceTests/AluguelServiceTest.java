@@ -4,6 +4,8 @@ import com.es2.bicicletario.dto.AluguelRequestDTO;
 import com.es2.bicicletario.dto.AluguelResponseDTO;
 import com.es2.bicicletario.dto.CiclistaRequestDTO;
 import com.es2.bicicletario.dto.CiclistaResponseDTO;
+import com.es2.bicicletario.dto.FuncionarioRequestDTO;
+import com.es2.bicicletario.dto.FuncionarioResponseDTO;
 import com.es2.bicicletario.entity.*;
 import com.es2.bicicletario.repository.AluguelRepository;
 import com.es2.bicicletario.repository.CiclistaRepository;
@@ -12,6 +14,7 @@ import com.es2.bicicletario.repository.FuncionarioRepository;
 import com.es2.bicicletario.service.AluguelService;
 import com.es2.bicicletario.validation.RegraDeNegocioException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -22,8 +25,13 @@ import java.time.YearMonth;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AluguelServiceTest {
@@ -119,5 +127,221 @@ class AluguelServiceTest {
         assertThrows(RegraDeNegocioException.class, () -> {
             aluguelService.realizarAluguel(aluguelRequestDTO);
         });
+    }
+
+    @Nested
+    class VerificaDadosCiclistaTest {
+
+        @Test
+        void criarCiclista_QuandoSenhasNaoConferem_DeveLancarExcecao() {
+            ciclistaRequestDTO.setSenha("senha123");
+            ciclistaRequestDTO.setConfirmacaoSenha("senha_diferente");
+
+            assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessage("A senha e a confirmação de senha não coincidem.");
+        }
+
+        @Test
+        void criarCiclista_QuandoCartaoDeCreditoEhNulo_DeveLancarExcecao() {
+            ciclistaRequestDTO.setCartaoDeCredito(null);
+
+            assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessage("Dados do cartão de crédito são obrigatórios e o cartão deve ser válido.");
+        }
+
+        @Test
+        void criarCiclista_QuandoEmailTemFormatoInvalido_DeveLancarExcecao() {
+            ciclistaRequestDTO.setEmail("email-invalido.com");
+
+            assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessage("O e-mail está em um formato inválido.");
+        }
+    }
+
+    @Nested
+    class DeletarFuncionarioTest {
+
+        @Test
+        void deletarFuncionario_ComMatriculaValida_DeveChamarDeleteByIdERetornarTrue() {
+
+            String matriculaParaDeletar = "F001";
+            doNothing().when(funcionarioRepository).deleteById(matriculaParaDeletar);
+
+            Boolean resultado = aluguelService.deletarFuncionario(matriculaParaDeletar);
+
+            verify(funcionarioRepository, times(1)).deleteById(matriculaParaDeletar);
+            
+            assertThat(resultado).isTrue();
+        }
+    }
+
+    @Nested
+    class GetFuncionariosTest {
+
+        @Mock
+        private FuncionarioRepository funcionarioRepository; 
+
+        @InjectMocks
+        private AluguelService aluguelService; 
+    }
+
+    @Nested
+    class GetFuncionarioByIdTest {
+
+        @Test
+        void getFuncionarioById_QuandoFuncionarioExiste_DeveRetornarOptionalComDto() {
+
+            String matricula = "F123";
+            Funcionario funcionario = new Funcionario(
+                matricula,
+                "senhaSegura",
+                null,
+                new Email("funcionario.teste@email.com"),
+                "Funcionario Teste",
+                35,
+                "Analista",
+                new Cpf("33344455566")
+            );
+
+            when(funcionarioRepository.findById(matricula)).thenReturn(Optional.of(funcionario));
+
+            Optional<FuncionarioResponseDTO> responseOptional = aluguelService.getFuncionarioById(matricula);
+
+            assertThat(responseOptional).isPresent();
+            responseOptional.ifPresent(dto -> {
+                assertThat(dto.getMatricula()).isEqualTo(matricula);
+                assertThat(dto.getNome()).isEqualTo("Funcionario Teste");
+                assertThat(dto.getEmail()).isEqualTo("funcionario.teste@email.com");
+            });
+        }
+
+        @Test
+        void getFuncionarioById_QuandoFuncionarioNaoExiste_DeveRetornarOptionalVazio() {
+
+            String matricula = "F999";
+            when(funcionarioRepository.findById(matricula)).thenReturn(Optional.empty());
+
+            Optional<FuncionarioResponseDTO> responseOptional = aluguelService.getFuncionarioById(matricula);
+
+            assertThat(responseOptional).isEmpty();
+        }
+    }
+
+    @Nested
+    class AtualizarFuncionarioTest {
+
+        private Funcionario funcionarioExistente;
+        private FuncionarioRequestDTO funcionarioRequestDTO;
+
+        @BeforeEach
+        void setUp() {
+            funcionarioExistente = new Funcionario(
+                "F123",
+                "senhaAntiga",
+                null,
+                new Email("antigo@email.com"),
+                "Nome Antigo",
+                30,
+                "Cargo Antigo",
+                new Cpf("11122233344")
+            );
+
+            funcionarioRequestDTO = new FuncionarioRequestDTO();
+            funcionarioRequestDTO.setNome("Nome Novo");
+            funcionarioRequestDTO.setEmail("novo@email.com");
+            funcionarioRequestDTO.setIdade(35);
+            funcionarioRequestDTO.setFuncao("Cargo Novo");
+            funcionarioRequestDTO.setCpf("11122233344");
+            funcionarioRequestDTO.setSenha("senhaNova123");
+            funcionarioRequestDTO.setConfirmacaoSenha("senhaNova123");
+        }
+
+        @Test
+        void atualizarFuncionario_ComDadosValidos_DeveRetornarDtoAtualizado() {
+
+            when(funcionarioRepository.findById("F123")).thenReturn(Optional.of(funcionarioExistente));
+            when(funcionarioRepository.save(any(Funcionario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            FuncionarioResponseDTO responseDTO = aluguelService.atualizarFuncionario("F123", funcionarioRequestDTO);
+
+            assertThat(responseDTO).isNotNull();
+            assertThat(responseDTO.getNome()).isEqualTo("Nome Novo");
+            assertThat(responseDTO.getEmail()).isEqualTo("novo@email.com");
+            assertThat(responseDTO.getIdade()).isEqualTo(35);
+            
+            verify(funcionarioRepository).save(argThat(savedFuncionario ->
+                savedFuncionario.getSenha().equals("senhaNova123")
+            ));
+        }
+
+        @Test
+        void atualizarFuncionario_QuandoFuncionarioNaoExiste_DeveLancarExcecao() {
+
+            String matriculaInexistente = "F999";
+            when(funcionarioRepository.findById(matriculaInexistente)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> aluguelService.atualizarFuncionario(matriculaInexistente, funcionarioRequestDTO))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessage("Funcionário não encontrado com a matrícula: " + matriculaInexistente);
+        }
+
+        @Test
+        void atualizarFuncionario_QuandoSenhasNaoConferem_DeveLancarExcecao() {
+
+            funcionarioRequestDTO.setConfirmacaoSenha("senhaDiferente");
+            when(funcionarioRepository.findById("F123")).thenReturn(Optional.of(funcionarioExistente));
+
+            assertThatThrownBy(() -> aluguelService.atualizarFuncionario("F123", funcionarioRequestDTO))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessage("A senha e a confirmação de senha não coincidem.");
+        }
+
+        @Test
+        void atualizarFuncionario_SemNovaSenha_NaoDeveAlterarSenhaOriginal() {
+
+            funcionarioRequestDTO.setSenha(null);
+            funcionarioRequestDTO.setConfirmacaoSenha(null);
+
+            when(funcionarioRepository.findById("F123")).thenReturn(Optional.of(funcionarioExistente));
+            when(funcionarioRepository.save(any(Funcionario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            aluguelService.atualizarFuncionario("F123", funcionarioRequestDTO);
+
+            verify(funcionarioRepository).save(argThat(savedFuncionario ->
+                savedFuncionario.getSenha().equals("senhaAntiga")
+            ));
+        }
+    }
+
+    @Nested
+    class CriarFuncionarioTest {
+
+        @Test
+        void criarFuncionario_ComDadosValidos_DeveSalvarERetornarFuncionario() {
+
+            Funcionario novoFuncionario = new Funcionario(
+                "F456",
+                "senhaForte",
+                null,
+                new Email("novo.funcionario@email.com"),
+                "Novo Funcionario",
+                28,
+                "Operador",
+                new Cpf("77788899900")
+            );
+
+            when(funcionarioRepository.save(any(Funcionario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            Funcionario funcionarioSalvo = aluguelService.criarFuncionario(novoFuncionario);
+
+            assertThat(funcionarioSalvo).isNotNull();
+            assertThat(funcionarioSalvo.getMatricula()).isEqualTo("F456");
+            assertThat(funcionarioSalvo.getNome()).isEqualTo("Novo Funcionario");
+
+            verify(funcionarioRepository, times(1)).save(novoFuncionario);
+        }
     }
 }
