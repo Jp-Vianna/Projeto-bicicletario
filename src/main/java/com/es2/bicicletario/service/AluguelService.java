@@ -41,6 +41,7 @@ public class AluguelService {
     public CiclistaResponseDTO criarCiclista(CiclistaRequestDTO novoCiclista) {
 
         this.verificaDadosCiclista(novoCiclista);
+        this.verificaDadosDuplicados(novoCiclista);
 
         Ciclista ciclista = new Ciclista();
         ciclista.setNomeCiclista(novoCiclista.getNomeCiclista());
@@ -222,11 +223,61 @@ public class AluguelService {
         return true;
     }
 
+    @Transactional
+    public CiclistaResponseDTO atualizarCiclista(Integer idCiclista, CiclistaRequestDTO ciclistaRequestDTO) {
+        Ciclista ciclista = converteParaCiclista(ciclistaRepository.findById(idCiclista));
+
+        // Atualiza os campos do ciclista com os dados do DTO
+        ciclista.setNomeCiclista(ciclistaRequestDTO.getNomeCiclista());
+        ciclista.setDataNascimento(ciclistaRequestDTO.getDataNascimento());
+        ciclista.setCartao(ciclistaRequestDTO.getCartaoDeCredito().toEntity());
+        ciclista.setSenha(ciclistaRequestDTO.getSenha());
+        ciclista.setEmail(new Email(ciclistaRequestDTO.getEmail()));
+
+        Nacionalidade nacionalidade = ciclistaRequestDTO.getNacionalidade();
+        ciclista.setNacionalidade(nacionalidade);
+
+        if (Nacionalidade.BRASILEIRO.equals(nacionalidade)) {
+
+            if (ciclistaRequestDTO.getCpf() == null || !Cpf.validarCpf(ciclistaRequestDTO.getCpf())) {
+                throw new RegraDeNegocioException("Para brasileiros, um CPF válido é obrigatório.");
+            }
+
+            ciclista.setCpf(new Cpf(ciclistaRequestDTO.getCpf()));
+            ciclista.setPassaporte(null);
+
+        } else if (Nacionalidade.ESTRANGEIRO.equals(nacionalidade)) {
+
+            if (ciclistaRequestDTO.getPassaporte() == null || !Passaporte.validarPassaporte(ciclistaRequestDTO.getPassaporte().toEntity())) {
+                throw new RegraDeNegocioException("Para estrangeiros, um passaporte válido é obrigatório.");
+            }
+
+            ciclista.setPassaporte(ciclistaRequestDTO.getPassaporte().toEntity());
+            ciclista.setCpf(null);
+
+        }
+
+        Ciclista ciclistaAtualizado = ciclistaRepository.save(ciclista);
+        return CiclistaResponseDTO.fromEntity(ciclistaAtualizado);
+    }
+
+    @Transactional
+    public void ativarCiclista(Integer idCiclista) {
+        Ciclista ciclista = converteParaCiclista(ciclistaRepository.findById(idCiclista));
+        if (ciclista.getStatus() == Status.INATIVO) {
+            ciclista.setStatus(Status.ATIVO);
+            ciclistaRepository.save(ciclista);
+        } else {
+            throw new RegraDeNegocioException("O ciclista não está inativo.");
+        }
+    }
+
+
     private Ciclista converteParaCiclista(Optional<Ciclista> optionalCiclista){
         return optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
     }
 
-    private boolean verificaDadosCiclista(CiclistaRequestDTO novoCiclista) {
+    private void verificaDadosCiclista(CiclistaRequestDTO novoCiclista) {
         if (novoCiclista.getSenha() == null || !novoCiclista.getSenha().equals(novoCiclista.getConfirmacaoSenha())) {
             throw new RegraDeNegocioException("A senha e a confirmação de senha não coincidem.");
         }
@@ -235,6 +286,12 @@ public class AluguelService {
             throw new RegraDeNegocioException("Dados do cartão de crédito são obrigatórios e o cartão deve ser válido.");
         }
 
+        if (!Email.isValido(novoCiclista.getEmail())) {
+            throw new RegraDeNegocioException("O e-mail está em um formato inválido.");
+        }
+    }
+
+    private void verificaDadosDuplicados(CiclistaRequestDTO novoCiclista){
         if (ciclistaRepository.findByEmailEndereco(novoCiclista.getEmail()).isPresent()) {
             throw new RegraDeNegocioException("Este e-mail já está em uso.");
         }
@@ -248,12 +305,7 @@ public class AluguelService {
         } else if (novoCiclista.getNacionalidade() == Nacionalidade.ESTRANGEIRO && novoCiclista.getPassaporte() != null &&
                 ciclistaRepository.findByPassaporteNumeroPassaporte(novoCiclista.getPassaporte().getNumero()).isPresent()) {
 
-                throw new RegraDeNegocioException("Este Passaporte já está em uso.");  
+                throw new RegraDeNegocioException("Este Passaporte já está em uso.");
         }
-
-        return true;
     }
-
 }
-
-
