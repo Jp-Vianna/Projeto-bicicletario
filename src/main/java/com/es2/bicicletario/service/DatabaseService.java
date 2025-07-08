@@ -1,5 +1,7 @@
 package com.es2.bicicletario.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,11 +11,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 public class DatabaseService {
@@ -47,8 +48,13 @@ public class DatabaseService {
             stmt.execute(sql);
             
         } finally {
-            if (tempFile.exists() && tempFile.delete()) {
-                    logger.warn("Arquivo apagado com sucesso SUCESSO");
+            try {
+                // Utiliza Files.delete para um melhor tratamento de erros
+                Files.delete(tempFile.toPath());
+                logger.info("Arquivo temporário de restauração apagado com sucesso.");
+            } catch (IOException e) {
+                // Loga um erro detalhado se a exclusão do arquivo falhar
+                logger.error("Falha ao apagar o arquivo temporário: " + tempFile.getAbsolutePath(), e);
             }
         }
     }
