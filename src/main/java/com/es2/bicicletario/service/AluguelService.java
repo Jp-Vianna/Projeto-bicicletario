@@ -45,7 +45,7 @@ public class AluguelService {
         ciclista.setCartao(novoCiclista.getCartaoDeCredito().toEntity());
         ciclista.setSenha(novoCiclista.getSenha());
         ciclista.setFotoDocumento(novoCiclista.getFotoDocumento());
-        ciclista.setStatus(Status.AGUARDANDO_ATIVAMENTO);
+        ciclista.setStatus(Status.INATIVO);
 
         if (!Email.isValido(novoCiclista.getEmail())) {
             throw new RegraDeNegocioException("O e-mail está em um formato inválido.");
