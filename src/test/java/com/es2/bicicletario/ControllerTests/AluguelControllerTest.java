@@ -54,6 +54,10 @@ class AluguelControllerTest {
     private static final String CVV_TESTE = "123";
     private static final LocalDate DATA_NASCIMENTO_TESTE = LocalDate.of(2000, 1, 1);
     private static final Integer CICLISTA_ID_TESTE = 1;
+    private static final String NOME_CAMPO_JSON = "$.nome";
+    private static final String MATRICULA_CAMPO_JSON = "$.matricula";
+    private static final String NOME_ATUALIZADO = "Jorge Aragão";
+    private static final String EMAIL_ATUALIZADO = "novo.email@teste.com";
 
     // Constantes para mensagens de erro
     private static final String ERRO_ALUGUEL_NAO_AUTORIZADO = "O aluguel não foi autorizado.";
@@ -114,7 +118,7 @@ class AluguelControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(ciclistaRequestDTO)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.nome").value(NOME_TESTE))
+        .andExpect(jsonPath(NOME_CAMPO_JSON ).value(NOME_TESTE))
         .andExpect(jsonPath("$.email").value(EMAIL_TESTE));
     }
 
@@ -208,8 +212,6 @@ class AluguelControllerTest {
     class AtualizarCiclistaControllerTest {
 
         private CiclistaRequestDTO ciclistaUpdateDTO;
-        private static final String NOME_ATUALIZADO = "Nome Atualizado";
-        private static final String EMAIL_ATUALIZADO = "novo.email@teste.com";
 
         @BeforeEach
         void setUp() {
@@ -245,7 +247,7 @@ class AluguelControllerTest {
                     .content(objectMapper.writeValueAsString(ciclistaUpdateDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(CICLISTA_ID_TESTE))
-                .andExpect(jsonPath("$.nome").value(NOME_ATUALIZADO))
+                .andExpect(jsonPath(NOME_CAMPO_JSON ).value(NOME_ATUALIZADO))
                 .andExpect(jsonPath("$.email").value(EMAIL_ATUALIZADO));
         }
 
@@ -425,8 +427,8 @@ class AluguelControllerTest {
 
             mockMvc.perform(get("/api/funcionarios/{matricula}", matricula))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.matricula").value(matricula))
-                .andExpect(jsonPath("$.nome").value("Funcionario Teste"));
+                .andExpect(jsonPath(MATRICULA_CAMPO_JSON).value(matricula))
+                .andExpect(jsonPath(NOME_CAMPO_JSON ).value("Funcionario Teste"));
         }
 
         @Test
@@ -469,8 +471,8 @@ class AluguelControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(funcionarioRequestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.matricula").value(matricula))
-                .andExpect(jsonPath("$.nome").value("Nome Atualizado"));
+                .andExpect(jsonPath(MATRICULA_CAMPO_JSON).value(matricula))
+                .andExpect(jsonPath(NOME_CAMPO_JSON ).value("Nome Atualizado"));
         }
 
         @Test
@@ -526,8 +528,8 @@ class AluguelControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(novoFuncionario)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.matricula").value("F789"))
-                .andExpect(jsonPath("$.nome").value("Funcionario Novo"));
+                .andExpect(jsonPath(MATRICULA_CAMPO_JSON).value("F789"))
+                .andExpect(jsonPath(NOME_CAMPO_JSON ).value("Funcionario Novo"));
         }
 
         @Test

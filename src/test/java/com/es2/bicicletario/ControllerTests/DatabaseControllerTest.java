@@ -24,18 +24,24 @@ class DatabaseControllerTest {
     @MockBean
     private DatabaseService databaseService;
 
+    private static final String INSERT = "INSERT INTO...";
+    private static final String FILE = "file";
+    private static final String BACKUP_FILE = "backup.sql";
+    private static final String CONTEXT = "text/plain";
+    private static final String CAMINHO_END = "/api/db/restore";
+
     @Test
     void restoreDatabase_ComArquivoValido_DeveRetornarStatus200Ok() throws Exception {
         MockMultipartFile sqlFile = new MockMultipartFile(
-            "file",
-            "backup.sql",
-            "text/plain",
-            "INSERT INTO...".getBytes()
+            FILE,
+            BACKUP_FILE,
+            CONTEXT,
+            INSERT.getBytes()
         );
 
         doNothing().when(databaseService).restoreDatabase(sqlFile);
 
-        mockMvc.perform(multipart("/api/db/restore").file(sqlFile))
+        mockMvc.perform(multipart(CAMINHO_END).file(sqlFile))
             .andExpect(status().isOk())
             .andExpect(content().string("Banco de dados restaurado com sucesso!"));
     }
@@ -44,13 +50,13 @@ class DatabaseControllerTest {
     void restoreDatabase_ComArquivoVazio_DeveRetornarStatus400BadRequest() throws Exception {
 
         MockMultipartFile emptyFile = new MockMultipartFile(
-            "file",
+            FILE,
             "empty.sql",
-            "text/plain",
+            CONTEXT,
             new byte[0] // Arquivo vazio
         );
 
-        mockMvc.perform(multipart("/api/db/restore").file(emptyFile))
+        mockMvc.perform(multipart(CAMINHO_END).file(emptyFile))
             .andExpect(status().isBadRequest())
             .andExpect(content().string("Por favor, envie um arquivo .sql válido."));
     }
@@ -59,10 +65,10 @@ class DatabaseControllerTest {
     void restoreDatabase_QuandoServiceLancaExcecao_DeveRetornarStatus500InternalServerError() throws Exception {
 
         MockMultipartFile sqlFile = new MockMultipartFile(
-            "file",
-            "backup.sql",
-            "text/plain",
-            "INSERT INTO...".getBytes()
+            FILE,
+            BACKUP_FILE,
+            CONTEXT,
+           INSERT.getBytes()
         );
 
         String mensagemErro = "Falha ao executar script SQL.";

@@ -17,6 +17,7 @@ import java.sql.Statement;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,10 +35,17 @@ class DatabaseServiceTest {
     @Mock
     private Statement statement;
 
+    private static final String INSERT = "INSERT...";
+    private static final String FILE = "file";
+    private static final String TEST_FILE = "test.sql";
+    private static final String CONTEXT = "text/plain";
+    private static final String ERRO_CONEXAO = "Erro de conexão simulado.";
+    private static final String ERRO_EXEC = "Erro de execução simulado.";
+
     @Test
     void restoreDatabase_ComArquivoValido_DeveExecutarComandosSql() throws SQLException, IOException {
 
-        MultipartFile sqlFile = new MockMultipartFile("file", "test.sql", "text/plain", "INSERT...".getBytes());
+        MultipartFile sqlFile = new MockMultipartFile(FILE, TEST_FILE, CONTEXT, INSERT.getBytes());
 
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.createStatement()).thenReturn(statement);
@@ -52,26 +60,26 @@ class DatabaseServiceTest {
     @Test
     void restoreDatabase_QuandoDataSourceLancaSQLException_DevePropagarExcecao() throws SQLException {
 
-        MultipartFile sqlFile = new MockMultipartFile("file", "test.sql", "text/plain", "INSERT...".getBytes());
+        MultipartFile sqlFile = new MockMultipartFile(FILE, TEST_FILE, CONTEXT, INSERT.getBytes());
         
-        when(dataSource.getConnection()).thenThrow(new SQLException("Erro de conexão simulado."));
+        when(dataSource.getConnection()).thenThrow(new SQLException(ERRO_CONEXAO));
 
         assertThatThrownBy(() -> databaseService.restoreDatabase(sqlFile))
             .isInstanceOf(SQLException.class)
-            .hasMessage("Erro de conexão simulado.");
+            .hasMessage(ERRO_CONEXAO);
     }
 
     @Test
     void restoreDatabase_QuandoStatementLancaSQLException_DevePropagarExcecao() throws SQLException {
 
-        MultipartFile sqlFile = new MockMultipartFile("file", "test.sql", "text/plain", "INSERT...".getBytes());
+        MultipartFile sqlFile = new MockMultipartFile(FILE, TEST_FILE, CONTEXT, INSERT.getBytes());
 
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.createStatement()).thenReturn(statement);
-        when(statement.execute(anyString())).thenThrow(new SQLException("Erro de execução SQL simulado."));
+        when(statement.execute(anyString())).thenThrow(new SQLException(ERRO_EXEC));
 
         assertThatThrownBy(() -> databaseService.restoreDatabase(sqlFile))
             .isInstanceOf(SQLException.class)
-            .hasMessage("Erro de execução SQL simulado.");
+            .hasMessage(ERRO_EXEC);
     }
 }
