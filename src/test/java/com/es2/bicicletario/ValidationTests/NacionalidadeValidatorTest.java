@@ -22,6 +22,7 @@ class NacionalidadeValidatorTest {
 
     private static Validator validator;
     private CiclistaRequestDTO ciclistaRequestDTO;
+    private static final String CPF_TESTE = "12345678901";
 
     @BeforeAll
     static void setUpValidator() {
@@ -49,7 +50,7 @@ class NacionalidadeValidatorTest {
     @Test
     void deveSerValido_QuandoBrasileiroComCpfCorreto() {
         ciclistaRequestDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
-        ciclistaRequestDTO.setCpf("12345678901");
+        ciclistaRequestDTO.setCpf(CPF_TESTE);
         ciclistaRequestDTO.setPassaporte(null);
 
         Set<ConstraintViolation<CiclistaRequestDTO>> violations = validator.validate(ciclistaRequestDTO);
@@ -89,7 +90,7 @@ class NacionalidadeValidatorTest {
         passaporteDto.setDataDeValidade(LocalDate.now().plusYears(1));
 
         ciclistaRequestDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
-        ciclistaRequestDTO.setCpf("12345678901");
+        ciclistaRequestDTO.setCpf(CPF_TESTE);
         ciclistaRequestDTO.setPassaporte(passaporteDto);
 
         Set<ConstraintViolation<CiclistaRequestDTO>> violations = validator.validate(ciclistaRequestDTO);
@@ -116,7 +117,7 @@ class NacionalidadeValidatorTest {
 
         ciclistaRequestDTO.setNacionalidade(Nacionalidade.ESTRANGEIRO);
         ciclistaRequestDTO.setPassaporte(passaporteDto);
-        ciclistaRequestDTO.setCpf("12345678901");
+        ciclistaRequestDTO.setCpf(CPF_TESTE);
 
         Set<ConstraintViolation<CiclistaRequestDTO>> violations = validator.validate(ciclistaRequestDTO);
         assertThat(violations).hasSize(1);
