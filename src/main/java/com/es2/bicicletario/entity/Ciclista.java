@@ -51,7 +51,7 @@ public class Ciclista {
     @Column(nullable = false, unique = true)
     private Email email;
 
-    @Column(name = "foto_documento", nullable = false)
+    @Column(name = "foto_documento")
     private String fotoDocumento;
 
     @Embedded

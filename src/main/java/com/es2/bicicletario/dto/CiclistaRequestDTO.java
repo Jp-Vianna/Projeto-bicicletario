@@ -28,7 +28,6 @@ public class CiclistaRequestDTO {
     @Email(message = "O formato do email é inválido.")
     private String email;
 
-    @NotNull(message = "A foto de documento é obrigatória.")
     private String fotoDocumento;
 
     @NotNull(message = "A data de nascimento é obrigatória.")
