@@ -44,6 +44,7 @@ public class AluguelService {
         ciclista.setDataNascimento(novoCiclista.getDataNascimento());
         ciclista.setCartao(novoCiclista.getCartaoDeCredito().toEntity());
         ciclista.setSenha(novoCiclista.getSenha());
+        ciclista.setFotoDocumento(novoCiclista.getFotoDocumento());
         ciclista.setStatus(Status.AGUARDANDO_ATIVAMENTO);
 
         if (!Email.isValido(novoCiclista.getEmail())) {
