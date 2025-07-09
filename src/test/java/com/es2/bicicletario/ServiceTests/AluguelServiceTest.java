@@ -40,6 +40,7 @@ class AluguelServiceTest {
     private static final String NOME_TESTE = "João Viana";
     private static final String EMAIL_TESTE = "joao.viana@example.com";
     private static final String SENHA_TESTE = "senha123";
+    private static final String SENHA_NOVA = "senhaNova123";
     private static final LocalDate DATA_NASCIMENTO_TESTE = LocalDate.of(1990, 1, 1);
     private static final Nacionalidade NACIONALIDADE_TESTE = Nacionalidade.BRASILEIRO;
     private static final String CPF_TESTE = "111.222.333-96";
@@ -143,8 +144,8 @@ class AluguelServiceTest {
 
         @Test
         void criarCiclista_QuandoSenhasNaoConferem_DeveLancarExcecao() {
-            ciclistaRequestDTO.setSenha("senha123");
-            ciclistaRequestDTO.setConfirmacaoSenha("senha_diferente");
+            ciclistaRequestDTO.setSenha(SENHA_TESTE);
+            ciclistaRequestDTO.setConfirmacaoSenha(SENHA_NOVA);
 
             assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
                 .isInstanceOf(RegraDeNegocioException.class)
@@ -264,8 +265,8 @@ class AluguelServiceTest {
             funcionarioRequestDTO.setIdade(35);
             funcionarioRequestDTO.setFuncao("Cargo Novo");
             funcionarioRequestDTO.setCpf("11122233344");
-            funcionarioRequestDTO.setSenha("senhaNova123");
-            funcionarioRequestDTO.setConfirmacaoSenha("senhaNova123");
+            funcionarioRequestDTO.setSenha(SENHA_NOVA);
+            funcionarioRequestDTO.setConfirmacaoSenha(SENHA_NOVA);
         }
 
         @Test
@@ -282,7 +283,7 @@ class AluguelServiceTest {
             assertThat(responseDTO.getIdade()).isEqualTo(35);
             
             verify(funcionarioRepository).save(argThat(savedFuncionario ->
-                savedFuncionario.getSenha().equals("senhaNova123")
+                savedFuncionario.getSenha().equals(SENHA_NOVA)
             ));
         }
 
