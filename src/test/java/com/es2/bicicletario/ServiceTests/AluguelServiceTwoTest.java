@@ -44,6 +44,7 @@ class AluguelServiceTwoTest {
     private static final String NUMERO_CARTAO_REQUEST = "1234567812345678";
     private static final String NOME_TITULAR_CARTAO_REQUEST = "Joana D.";
     private static final String CVV_CARTAO_REQUEST = "321";
+    private static final String PASSAPORTE_NUMERO = "PASS123";
 
     // Constantes para dados do Ciclista (entidade mockada)
     private static final String NOME_CICLISTA_BR = "Ciclista Ativo Brasileiro";
@@ -53,6 +54,9 @@ class AluguelServiceTwoTest {
     private static final String NOME_TITULAR_CARTAO_CICLISTA_BR = "Ciclista BR";
     private static final String CVV_CARTAO_CICLISTA_BR = "123";
 
+    //Constantes para erros
+    private static final String PASSAPORTE_OBRIGATORIO = "Para estrangeiros, um passaporte válido é obrigatório.";
+    private static final String CICLISTA_NAO_ENCONTRADO = "Ciclista não encontrado.";
 
     @InjectMocks
     private AluguelService aluguelService;
@@ -107,7 +111,7 @@ class AluguelServiceTwoTest {
 
             assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
                 .isInstanceOf(RegraDeNegocioException.class)
-                .hasMessage("Para estrangeiros, um passaporte válido é obrigatório.");
+                .hasMessage(PASSAPORTE_OBRIGATORIO);
         }
 
         @Test
@@ -256,7 +260,7 @@ class AluguelServiceTwoTest {
 
             assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
                 .isInstanceOf(RegraDeNegocioException.class)
-                .hasMessage("Para estrangeiros, um passaporte válido é obrigatório.");
+                .hasMessage(PASSAPORTE_OBRIGATORIO);
         }
 
         @Test
@@ -266,12 +270,12 @@ class AluguelServiceTwoTest {
             ciclistaRequestDTO.setCpf(null);
 
             CiclistaRequestDTO.PassaporteDto passaporteDto = new CiclistaRequestDTO.PassaporteDto();
-            passaporteDto.setNumero("PASS123");
+            passaporteDto.setNumero(PASSAPORTE_NUMERO);
             passaporteDto.setPais("FRANÇA");
             passaporteDto.setDataDeValidade(LocalDate.now().plusYears(5));
             ciclistaRequestDTO.setPassaporte(passaporteDto);
 
-            when(ciclistaRepository.findByPassaporteNumeroPassaporte("PASS123"))
+            when(ciclistaRepository.findByPassaporteNumeroPassaporte(PASSAPORTE_NUMERO))
                 .thenReturn(Optional.of(new Ciclista()));
 
             assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
@@ -376,7 +380,7 @@ class ExisteEmailTest {
 
         assertThatThrownBy(() -> aluguelService.existeEmail(emailInexistente))
             .isInstanceOf(RuntimeException.class)
-            .hasMessage("Ciclista não encontrado.");
+            .hasMessage(CICLISTA_NAO_ENCONTRADO);
         }
     }
 
@@ -417,7 +421,7 @@ class AtivarCiclistaTest {
 
         assertThatThrownBy(() -> aluguelService.ativarCiclista(idInexistente))
             .isInstanceOf(RuntimeException.class)
-            .hasMessage("Ciclista não encontrado.");
+            .hasMessage(CICLISTA_NAO_ENCONTRADO);
         }
     }
     
@@ -467,7 +471,7 @@ class AtualizarCartaoDeCreditoTest {
 
         assertThatThrownBy(() -> aluguelService.atualizarCartaoDeCredito(idInexistente, cartaoDto))
             .isInstanceOf(RuntimeException.class)
-            .hasMessage("Ciclista não encontrado.");
+            .hasMessage(CICLISTA_NAO_ENCONTRADO);
         }
     }
 
@@ -494,7 +498,7 @@ class AtualizarCartaoDeCreditoTest {
 
             assertThatThrownBy(() -> aluguelService.getCartaoDeCredito(idInexistente))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("Ciclista não encontrado.");
+                .hasMessage(CICLISTA_NAO_ENCONTRADO);
         }
     }
 
@@ -552,7 +556,7 @@ class AtualizarCartaoDeCreditoTest {
 
             assertThatThrownBy(() -> aluguelService.atualizarCiclista(idInexistente, ciclistaUpdateDto))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("Ciclista não encontrado.");
+                .hasMessage(CICLISTA_NAO_ENCONTRADO);
         }
 
         @Test
@@ -573,7 +577,7 @@ class AtualizarCartaoDeCreditoTest {
             ciclistaUpdateDto.setNacionalidade(Nacionalidade.ESTRANGEIRO);
             
             CiclistaRequestDTO.PassaporteDto passaporteExpirado = new CiclistaRequestDTO.PassaporteDto();
-            passaporteExpirado.setNumero("PASS123");
+            passaporteExpirado.setNumero(PASSAPORTE_NUMERO);
             passaporteExpirado.setPais("EUA");
             passaporteExpirado.setDataDeValidade(LocalDate.now().minusDays(1)); 
             ciclistaUpdateDto.setPassaporte(passaporteExpirado);
@@ -582,7 +586,7 @@ class AtualizarCartaoDeCreditoTest {
             
             assertThatThrownBy(() -> aluguelService.atualizarCiclista(ciclistaBrasileiro.getId(), ciclistaUpdateDto))
                 .isInstanceOf(RegraDeNegocioException.class)
-                .hasMessage("Para estrangeiros, um passaporte válido é obrigatório.");
+                .hasMessage(PASSAPORTE_OBRIGATORIO);
         }
     }
 }
