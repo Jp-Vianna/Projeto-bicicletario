@@ -8,7 +8,7 @@ class BicicletarioApplicationTests {
 
 	@Test
 	void contextLoads() {
-		// Não implementado
+
 	}
 
 }
