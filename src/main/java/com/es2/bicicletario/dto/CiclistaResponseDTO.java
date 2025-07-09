@@ -34,6 +34,7 @@ public class CiclistaResponseDTO {
         String cartaoMascarado = "************" + cartaoCompleto.substring(cartaoCompleto.length() - 4);
 
         String numeroPassaporte = (ciclista.getPassaporte() != null) ? ciclista.getPassaporte().getNumeroPassaporte() : null;
+        String numeroCpf = (ciclista.getCpf() != null) ? ciclista.getCpf().getNumero() : null;
 
         return new CiclistaResponseDTO(
                 ciclista.getId(),
@@ -41,7 +42,7 @@ public class CiclistaResponseDTO {
                 ciclista.getEmail().getEndereco(), 
                 ciclista.getStatus(),
                 ciclista.getNacionalidade(),
-                ciclista.getCpf().getNumero(), 
+                numeroCpf, 
                 numeroPassaporte,
                 ciclista.getCartao().getNomeNoCartao(),
                 cartaoMascarado 
