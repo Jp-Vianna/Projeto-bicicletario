@@ -76,7 +76,7 @@ class DatabaseControllerTest {
         doThrow(new java.sql.SQLException(mensagemErro))
             .when(databaseService).restoreDatabase(sqlFile);
 
-        mockMvc.perform(multipart("/api/db/restore").file(sqlFile))
+        mockMvc.perform(multipart(CAMINHO_END).file(sqlFile))
             .andExpect(status().isInternalServerError())
             .andExpect(content().string("Falha ao restaurar o banco de dados: " + mensagemErro));
     }
