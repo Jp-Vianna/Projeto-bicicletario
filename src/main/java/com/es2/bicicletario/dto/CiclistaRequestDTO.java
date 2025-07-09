@@ -4,6 +4,7 @@ import com.es2.bicicletario.entity.CartaoDeCredito;
 import com.es2.bicicletario.entity.Nacionalidade;
 import com.es2.bicicletario.entity.Passaporte;
 import com.es2.bicicletario.validation.ValidNacionalidade; // Importe
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Future;
@@ -26,6 +27,9 @@ public class CiclistaRequestDTO {
     @NotBlank(message = "O email é obrigatório.")
     @Email(message = "O formato do email é inválido.")
     private String email;
+
+    @NotNull(message = "A foto de documento é obrigatória.")
+    private String fotoDocumento;
 
     @NotNull(message = "A data de nascimento é obrigatória.")
     private LocalDate dataNascimento;
