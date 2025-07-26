@@ -282,7 +282,7 @@ public class AluguelService {
         Optional<Aluguel> optionalAluguel = aluguelRepository.findByIdBicicletaAndStatus(novaDevolucao.getIdBicicleta(), Status.EM_ANDAMENTO);
         Aluguel aluguel = optionalAluguel.orElseThrow(() -> new RuntimeException("Não encontrou alugueis ativos com essa bicicleta."));
 
-        String valorTotal = Cobranca.realizarCobrancaExtra(); // A integrar
+        String valorTotal = Cobranca.realizarCobrancaExtra(); // A integrar// calcular o extra por tempo
 
         Devolucao devolucao = new Devolucao();
         

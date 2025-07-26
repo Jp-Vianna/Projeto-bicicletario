@@ -515,7 +515,7 @@ class AtualizarCartaoDeCreditoTest {
             assertThat(responseOptional).isPresent();
             responseOptional.ifPresent(dto -> {
                 assertThat(dto.getId()).isEqualTo(ciclistaBrasileiro.getId());
-                assertThat(dto.getNome()).isEqualTo(ciclistaBrasileiro.getNomeCiclista());
+                assertThat(dto.getNomeCiclista()).isEqualTo(ciclistaBrasileiro.getNomeCiclista());
                 assertThat(dto.getEmail()).isEqualTo(ciclistaBrasileiro.getEmail().getEndereco());
             });
         }

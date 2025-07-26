@@ -3,49 +3,78 @@ package com.es2.bicicletario.dto;
 import com.es2.bicicletario.entity.Ciclista;
 import com.es2.bicicletario.entity.Nacionalidade;
 import com.es2.bicicletario.entity.Status;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class CiclistaResponseDTO {
 
     private Integer id;
-    private String nome;
+    private String nomeCiclista;
     private String email;
-    private Status status;
+    private String fotoDocumento;
+    private LocalDate dataNascimento;
+    private Status status; 
+    private String senha; 
+    private String cpf; 
     private Nacionalidade nacionalidade;
-    private String cpf;
-    private String passaporte;
+    
+    private CartaoDeCreditoDto cartaoDeCredito;
+    private PassaporteDto passaporte;
 
-    private String nomeTitularCartao;
-    private String numeroCartaoMascarado;
+    @Data
+    public static class CartaoDeCreditoDto {
+        private String nomeTitular;
+        private String numero;
+        private YearMonth validade;
+        private String cvv;
+    }
 
-    /**
-     * Método de fábrica para converter a entidade Ciclista em seu DTO.
-     * @param ciclista A entidade a ser convertida.
-     * @return O DTO preenchido com dados seguros.
-     */
+    @Data
+    public static class PassaporteDto {
+        private String numero;
+        private LocalDate dataDeValidade;
+        private String pais;
+    }
+
     public static CiclistaResponseDTO fromEntity(Ciclista ciclista) {
+        CiclistaResponseDTO response = new CiclistaResponseDTO();
+        
+        response.setId(ciclista.getId());
+        response.setStatus(ciclista.getStatus());
+        response.setNomeCiclista(ciclista.getNomeCiclista());
+        response.setDataNascimento(ciclista.getDataNascimento());
+        response.setSenha(ciclista.getSenha()); 
+        response.setNacionalidade(ciclista.getNacionalidade());
+        response.setFotoDocumento(ciclista.getFotoDocumento());
 
-        String cartaoCompleto = ciclista.getCartao().getNumeroCartao();
-        String cartaoMascarado = "************" + cartaoCompleto.substring(cartaoCompleto.length() - 4);
+        if (ciclista.getEmail() != null) {
+            response.setEmail(ciclista.getEmail().getEndereco());
+        }
 
-        String numeroPassaporte = (ciclista.getPassaporte() != null) ? ciclista.getPassaporte().getNumeroPassaporte() : null;
-        String numeroCpf = (ciclista.getCpf() != null) ? ciclista.getCpf().getNumero() : null;
+        if (ciclista.getCpf() != null) {
+            response.setCpf(ciclista.getCpf().getNumero());
+        }
 
-        return new CiclistaResponseDTO(
-                ciclista.getId(),
-                ciclista.getNomeCiclista(),
-                ciclista.getEmail().getEndereco(), 
-                ciclista.getStatus(),
-                ciclista.getNacionalidade(),
-                numeroCpf, 
-                numeroPassaporte,
-                ciclista.getCartao().getNomeNoCartao(),
-                cartaoMascarado 
-        );
+        if (ciclista.getCartao() != null) {
+            CartaoDeCreditoDto cartaoDto = new CartaoDeCreditoDto();
+            cartaoDto.setNomeTitular(ciclista.getCartao().getNomeNoCartao());
+            cartaoDto.setNumero(ciclista.getCartao().getNumeroCartao());
+            cartaoDto.setValidade(ciclista.getCartao().getValidade());
+            cartaoDto.setCvv(ciclista.getCartao().getCodigoSeguranca()); 
+            response.setCartaoDeCredito(cartaoDto);
+        }
+
+        if (ciclista.getPassaporte() != null) {
+            PassaporteDto passaporteDto = new PassaporteDto();
+            passaporteDto.setNumero(ciclista.getPassaporte().getNumeroPassaporte());
+            passaporteDto.setDataDeValidade(ciclista.getPassaporte().getDataDeValidade());
+            passaporteDto.setPais(ciclista.getPassaporte().getPais());
+            response.setPassaporte(passaporteDto);
+        }
+
+        return response;
     }
 }
