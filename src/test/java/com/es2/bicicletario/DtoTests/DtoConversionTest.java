@@ -72,13 +72,13 @@ class DtoConversionTest {
         CiclistaResponseDTO dto = CiclistaResponseDTO.fromEntity(ciclista);
 
         assertThat(dto.getId()).isEqualTo(1);
-        assertThat(dto.getNome()).isEqualTo(nomeTeste);
+        assertThat(dto.getNomeCiclista()).isEqualTo(nomeTeste);
         assertThat(dto.getEmail()).isEqualTo("silva@email.com");
         assertThat(dto.getStatus()).isEqualTo(Status.ATIVO);
         assertThat(dto.getCpf()).isEqualTo("11122233344");
         assertThat(dto.getPassaporte()).isNull();
-        assertThat(dto.getNomeTitularCartao()).isEqualTo(nomeTeste);
-        assertThat(dto.getNumeroCartaoMascarado()).isEqualTo("************5678");
+        assertThat(dto.getCartaoDeCredito().getNomeTitular()).isEqualTo(nomeTeste);
+        assertThat(dto.getCartaoDeCredito().getNumero()).isEqualTo("1234567812345678");
     }
 
     @Test

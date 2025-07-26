@@ -16,12 +16,8 @@ public class FuncionarioResponseDTO {
     private String cpf;
     private Integer idade;
     private String funcao;
+    private String senha;
 
-    /**
-     * Método de fábrica para converter a entidade Funcionario em seu DTO.
-     * @param funcionario A entidade a ser convertida.
-     * @return O DTO preenchido com dados seguros para exposição.
-     */
     public static FuncionarioResponseDTO fromEntity(Funcionario funcionario) {
         return new FuncionarioResponseDTO(
                 funcionario.getMatricula(),
@@ -29,7 +25,8 @@ public class FuncionarioResponseDTO {
                 funcionario.getEmail().getEndereco(), 
                 funcionario.getCpf().getNumero(),   
                 funcionario.getIdade(),
-                funcionario.getFuncao()
+                funcionario.getFuncao(),
+                funcionario.getSenha()
         );
     }
 }
