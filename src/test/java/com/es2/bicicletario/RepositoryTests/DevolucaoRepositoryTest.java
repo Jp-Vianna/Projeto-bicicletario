@@ -51,7 +51,7 @@ public class DevolucaoRepositoryTest {
         devolucao.setAluguel(aluguel);
         devolucao.setTrancaFinal(301);
         devolucao.setHoraFim(LocalDateTime.now());
-        devolucao.setCobranca(new BigDecimal("12.50"));
+        devolucao.setCobrancaExtra(new BigDecimal("12.50"));
 
         Devolucao savedDevolucao = devolucaoRepository.save(devolucao);
 

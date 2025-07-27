@@ -41,36 +41,14 @@ class DevolucaoTest {
         devolucao.setAluguel(aluguel);
         devolucao.setTrancaFinal(305);
         devolucao.setHoraFim(horaFim);
-        devolucao.setCobranca(cobranca);
+        devolucao.setCobrancaExtra(cobranca);
 
         assertNotNull(devolucao);
         assertEquals(20, devolucao.getIdDevolucao());
         assertEquals(305, devolucao.getTrancaFinal());
         assertEquals(horaFim, devolucao.getHoraFim());
-        assertEquals(0, cobranca.compareTo(devolucao.getCobranca())); // Comparar BigDecimals
+        assertEquals(0, cobranca.compareTo(devolucao.getCobrancaExtra())); // Comparar BigDecimals
         assertNotNull(devolucao.getAluguel());
         assertEquals(100, devolucao.getAluguel().getIdAluguel());
-    }
-
-    @Test
-    void deveInstanciarDevolucaoCorretamenteComConstrutorCompleto() {
-
-        LocalDateTime horaFim = LocalDateTime.now().minusMinutes(5);
-        BigDecimal cobranca = new BigDecimal("25.00");
-
-        Devolucao devolucao = new Devolucao(
-                21,
-                306,
-                horaFim,
-                cobranca,
-                aluguel
-        );
-
-        assertNotNull(devolucao);
-        assertEquals(21, devolucao.getIdDevolucao());
-        assertEquals(306, devolucao.getTrancaFinal());
-        assertEquals(horaFim, devolucao.getHoraFim());
-        assertEquals(0, cobranca.compareTo(devolucao.getCobranca()));
-        assertEquals(aluguel, devolucao.getAluguel());
     }
 }

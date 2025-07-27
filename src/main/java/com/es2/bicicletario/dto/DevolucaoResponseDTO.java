@@ -15,9 +15,11 @@ public class DevolucaoResponseDTO {
 
     private Integer id;
     private Integer trancaFinal;
+    private Integer idBicicleta;
     private LocalDateTime horaFim;
     private BigDecimal cobranca;
-
+    private String numCartao;
+    private LocalDateTime horaCobranca;
     private Integer idAluguel;
 
     /**
@@ -29,8 +31,11 @@ public class DevolucaoResponseDTO {
         return new DevolucaoResponseDTO(
                 devolucao.getIdDevolucao(),
                 devolucao.getTrancaFinal(),
+                devolucao.getIdBicicleta(),
                 devolucao.getHoraFim(),
-                devolucao.getCobranca(),
+                devolucao.getCobrancaExtra(),
+                devolucao.getNumCartao(),
+                devolucao.getHoraCobranca(),
                 // Extrai apenas o ID do objeto Aluguel para evitar expor a entidade inteira
                 devolucao.getAluguel().getIdAluguel() 
         );

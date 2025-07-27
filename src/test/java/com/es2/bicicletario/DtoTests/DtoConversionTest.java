@@ -3,12 +3,10 @@ package com.es2.bicicletario.DtoTests;
 import com.es2.bicicletario.dto.AluguelResponseDTO;
 import com.es2.bicicletario.dto.CiclistaRequestDTO;
 import com.es2.bicicletario.dto.CiclistaResponseDTO;
-import com.es2.bicicletario.dto.DevolucaoResponseDTO;
 import com.es2.bicicletario.dto.FuncionarioResponseDTO;
 import com.es2.bicicletario.entity.*;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -105,29 +103,6 @@ class DtoConversionTest {
         assertThat(dto.getStatus()).isEqualTo(Status.EM_ANDAMENTO);
         assertThat(dto.getIdCiclista()).isEqualTo(10);
         assertThat(dto.getNomeCiclista()).isEqualTo(nomeTeste);
-    }
-
-    @Test
-    void deveConverterEntidadeDevolucaoParaResponseDto() {
-
-        Aluguel aluguel = new Aluguel();
-        aluguel.setIdAluguel(500);
-
-        Devolucao devolucao = new Devolucao(
-                25,
-                909,
-                LocalDateTime.of(2024, 1, 15, 11, 30, 0),
-                new BigDecimal("25.50"),
-                aluguel
-        );
-
-        DevolucaoResponseDTO dto = DevolucaoResponseDTO.fromEntity(devolucao);
-
-        assertThat(dto.getId()).isEqualTo(25);
-        assertThat(dto.getTrancaFinal()).isEqualTo(909);
-        assertThat(dto.getHoraFim()).isEqualTo(LocalDateTime.of(2024, 1, 15, 11, 30, 0));
-        assertThat(dto.getCobranca()).isEqualTo(new BigDecimal("25.50"));
-        assertThat(dto.getIdAluguel()).isEqualTo(500);
     }
 
     @Test

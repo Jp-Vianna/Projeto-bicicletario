@@ -15,8 +15,10 @@ class EmailServiceTest {
 
     @Test
     void enviarEmail_DeveSempreRetornarTrue() {
+        EmailService emailService = new EmailService(null);
+
         // Ação
-        boolean resultado = EmailService.enviarEmail();
+        boolean resultado = emailService.enviaEmail("teste@teste", "teste", "teste");
 
         assertThat(resultado).isTrue();
     }

@@ -19,13 +19,22 @@ public class Devolucao {
     private Integer idDevolucao;
 
     @Column(nullable = true)
-    private Integer trancaFinal; // Não integrado
+    private Integer trancaFinal;
+
+    @Column(nullable = true)
+    private Integer idBicicleta;
 
     @Column(nullable = true)
     private LocalDateTime horaFim;
 
     @Column(nullable = true)
-    private BigDecimal cobranca; // Não integrado
+    private BigDecimal cobrancaExtra;
+    
+    @Column(nullable = true)
+    private String numCartao; 
+
+    @Column(nullable = true)
+    private LocalDateTime horaCobranca;
 
     /**
      * Define um relacionamento One-to-One com a entidade Aluguel.

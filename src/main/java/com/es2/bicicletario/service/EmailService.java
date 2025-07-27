@@ -1,18 +1,42 @@
 package com.es2.bicicletario.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import com.es2.bicicletario.dto.EmailRequestDTO;
+import com.es2.bicicletario.dto.EmailResponseDTO;
+
+import lombok.AllArgsConstructor;
+import reactor.core.publisher.Mono;
+
+@Service
+@AllArgsConstructor
 public class EmailService {
-    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    private EmailService() {
-        throw new IllegalStateException("Classe de utilidade não deve ser instanciada");
-    }
+    private final WebClient webClient;
 
-    public static boolean enviarEmail() {
-        logger.warn("AVISO: Integração com API externa ainda não implementada. Usando comportamento FALSO de SUCESSO");
-        
-        return true;
+    public boolean enviaEmail(String email, String assunto, String mensagem){
+
+        EmailRequestDTO emailRequest = new EmailRequestDTO(email, assunto, mensagem);
+
+        try {
+            webClient
+                .post()
+                .uri("/email/enviarEmail")
+                .bodyValue(emailRequest)
+                .retrieve()
+                .onStatus(
+                    status -> status.isError(),
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("Falha na API. Status: " + response.statusCode() + ". Resposta: " + errorBody)))
+                )
+                .bodyToMono(EmailResponseDTO.class)
+                .block();
+            
+            return true;
+
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

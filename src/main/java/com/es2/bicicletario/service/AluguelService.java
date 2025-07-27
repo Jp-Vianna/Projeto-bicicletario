@@ -1,18 +1,23 @@
 package com.es2.bicicletario.service;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.es2.bicicletario.dto.AluguelRequestDTO;
 import com.es2.bicicletario.dto.AluguelResponseDTO;
+import com.es2.bicicletario.dto.CartaoDeCreditoRequestDTO;
 import com.es2.bicicletario.dto.CiclistaRequestDTO;
 import com.es2.bicicletario.dto.CiclistaResponseDTO;
+import com.es2.bicicletario.dto.CobrancaRequestDTO;
+import com.es2.bicicletario.dto.CobrancaResponseDTO;
 import com.es2.bicicletario.dto.DevolucaoRequestDTO;
 import com.es2.bicicletario.dto.DevolucaoResponseDTO;
 import com.es2.bicicletario.dto.FuncionarioRequestDTO;
@@ -22,6 +27,7 @@ import com.es2.bicicletario.repository.*;
 import com.es2.bicicletario.validation.RegraDeNegocioException;
 
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +37,8 @@ public class AluguelService {
     private final DevolucaoRepository devolucaoRepository;
     private final AluguelRepository aluguelRepository;
     private final CiclistaRepository ciclistaRepository;
-    private static final Logger logger = LoggerFactory.getLogger(AluguelService.class);
+    private final EmailService emailService;
+    private final WebClient webClient;
 
     @Transactional
     public CiclistaResponseDTO criarCiclista(CiclistaRequestDTO novoCiclista) {
@@ -260,11 +267,35 @@ public class AluguelService {
         aluguel.setHoraInicio(LocalDateTime.now());
         aluguel.setIdBicicleta(10001);
         aluguel.setStatus(Status.EM_ANDAMENTO);
-        
+
+        CobrancaRequestDTO cobrancaRequestDTO = new CobrancaRequestDTO();
+        cobrancaRequestDTO.setValor(new BigDecimal("10.00"));
+        cobrancaRequestDTO.setCiclista(ciclista.getId());
+
+        try {
+                webClient
+                    .post()
+                    .uri("/payment/cobranca")
+                    .bodyValue(cobrancaRequestDTO)
+                    .retrieve()
+                    .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        response -> response.bodyToMono(String.class)
+                            .flatMap(errorBody -> Mono.error(new RuntimeException("Falha na API externa. Status: " + response.statusCode() + ". Body: " + errorBody)))
+                    )
+                    .bodyToMono(CobrancaResponseDTO.class)
+                    .block();
+
+                emailService.enviaEmail(
+                    "joao.p.nv@edu.unirio.br", "Pagamento efetuado.", "O pagamento padrão de 10,00 foi confirmado!");
+
+            } catch (RuntimeException ex) {
+                throw new RuntimeException("Não foi possível concluir pagamento.");
+            }
+
         Aluguel aluguelSalvo = aluguelRepository.save(aluguel);
 
-        Cobranca.realizarCobrancaPadrao(); // A integrar, externo.
-
+        
         Tranca.destravaTranca();
 
         return AluguelResponseDTO.fromEntity(aluguelSalvo);
@@ -277,20 +308,60 @@ public class AluguelService {
         return AluguelResponseDTO.fromEntity(aluguel);
     }
 
-    public DevolucaoResponseDTO realizarDevolucao(DevolucaoRequestDTO novaDevolucao) { // A integrar
+    @Transactional
+    public DevolucaoResponseDTO realizarDevolucao(DevolucaoRequestDTO novaDevolucao) {
 
         Optional<Aluguel> optionalAluguel = aluguelRepository.findByIdBicicletaAndStatus(novaDevolucao.getIdBicicleta(), Status.EM_ANDAMENTO);
         Aluguel aluguel = optionalAluguel.orElseThrow(() -> new RuntimeException("Não encontrou alugueis ativos com essa bicicleta."));
+        Ciclista ciclista = aluguel.getCiclista();
 
-        String valorTotal = Cobranca.realizarCobrancaExtra(); // A integrar
+        LocalDateTime horaDevolucao = LocalDateTime.now();
+
+        BigDecimal valorExtra = this.calcularValorExcedente(aluguel.getHoraInicio(), horaDevolucao);
+
+        CobrancaRequestDTO cobrancaRequestDTO = new CobrancaRequestDTO();
+        cobrancaRequestDTO.setValor(valorExtra);
+        cobrancaRequestDTO.setCiclista(aluguel.getCiclista().getId());
 
         Devolucao devolucao = new Devolucao();
-        
-        devolucao.setTrancaFinal(novaDevolucao.getIdTranca());
-        devolucao.setHoraFim(LocalDateTime.now());
-        aluguel.setStatus(Status.FINALIZADO);
-        devolucao.setCobranca(new BigDecimal(valorTotal));
 
+        if (valorExtra == BigDecimal.ZERO) {
+            devolucao.setHoraCobranca(null);
+            devolucao.setCobrancaExtra(null);
+            devolucao.setNumCartao(null);
+        }else{
+            try {
+                CobrancaResponseDTO respostaApi = webClient
+                    .post()
+                    .uri("/payment/cobranca")
+                    .bodyValue(cobrancaRequestDTO)
+                    .retrieve()
+                    .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        response -> response.bodyToMono(String.class)
+                            .flatMap(errorBody -> Mono.error(new RuntimeException("Falha na API externa. Status: " + response.statusCode() + ". Body: " + errorBody)))
+                    )
+                    .bodyToMono(CobrancaResponseDTO.class)
+                    .block();
+
+                devolucao.setCobrancaExtra(respostaApi.getValor());
+                devolucao.setNumCartao(ciclista.getCartao().getNumeroCartao());
+                devolucao.setHoraCobranca(respostaApi.getHoraFinalizacao());
+
+                emailService.enviaEmail(
+                    "joao.p.nv@edu.unirio.br", "Pagamento efetuado.", "O pagamento de " + valorExtra + "foi confirmado!");
+
+            } catch (RuntimeException ex) {
+                throw new RuntimeException("Não foi possível concluir pagamento.");
+            }
+            
+        }
+
+        devolucao.setTrancaFinal(novaDevolucao.getIdTranca());
+        devolucao.setIdBicicleta(novaDevolucao.getIdBicicleta());
+        devolucao.setHoraFim(horaDevolucao);
+        aluguel.setStatus(Status.FINALIZADO);
+        
         Aluguel aluguelAtualizado = aluguelRepository.save(aluguel); 
 
         devolucao.setAluguel(aluguelAtualizado);
@@ -303,47 +374,56 @@ public class AluguelService {
     }
 
 
-    // Métodos de falsa integração
-
-
-    public Boolean trancaDisponivel() { // A integrar 
-        logger.warn("AVISO: Integração com API externa ainda não implementada. Usando comportamento FALSO de SUCESSO");
-
-        return true;
-    }
-
-    public Boolean validaTranca(/*Id da tranca */){
-        return true;//Integrar
-    }
-
-    public Boolean validaBicicleta(){ // Integrar
-        return true;
-    }
-
-    public boolean bicicletaEmReparo() { // A integrar
-        return false;
-    }
-
-
     // Métodos de utilidade
-
 
     private Ciclista converteParaCiclista(Optional<Ciclista> optionalCiclista){
         return optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
     }
 
     private void verificaDadosCiclista(CiclistaRequestDTO novoCiclista) {
+
         if (novoCiclista.getSenha() == null || !novoCiclista.getSenha().equals(novoCiclista.getConfirmacaoSenha())) {
             throw new RegraDeNegocioException("A senha e a confirmação de senha não coincidem.");
-        }
-
-        if (novoCiclista.getCartaoDeCredito() == null || !CartaoDeCredito.verificaCartao(/*integrar cartão aqui */)) {
-            throw new RegraDeNegocioException("Dados do cartão de crédito são obrigatórios e o cartão deve ser válido.");
         }
 
         if (!Email.isValido(novoCiclista.getEmail())) {
             throw new RegraDeNegocioException("O e-mail está em um formato inválido.");
         }
+
+        if (novoCiclista.getCartaoDeCredito() == null) {
+            throw new RegraDeNegocioException("Dados do cartão de crédito são obrigatórios.");
+        }
+
+        CartaoDeCreditoRequestDTO cartaoDeCreditoRequestDTO = new CartaoDeCreditoRequestDTO();
+        cartaoDeCreditoRequestDTO.setCvv(novoCiclista.getCartaoDeCredito().getCvv());
+        cartaoDeCreditoRequestDTO.setNomeTitular(novoCiclista.getCartaoDeCredito().getNomeTitular());
+        cartaoDeCreditoRequestDTO.setNumero(novoCiclista.getCartaoDeCredito().getNumero());
+        cartaoDeCreditoRequestDTO.setValidade(novoCiclista.getCartaoDeCredito().getValidade());
+
+        ResponseEntity<Void> responseValida;
+
+        try {
+            responseValida = webClient
+                .post()
+                .uri("/verifyCard/validaCartaoDeCredito")
+                .bodyValue(cartaoDeCreditoRequestDTO)
+                .retrieve()
+                .onStatus(
+                    status -> status.isError(),
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RegraDeNegocioException("API de validação retornou erro: " + errorBody)))
+                )
+                .toBodilessEntity()
+                .block();
+
+        } catch (Exception ex) {
+            throw new RuntimeException("Não foi possível se comunicar com o serviço de validação de cartão.", ex);
+        }
+
+        if (responseValida == null || responseValida.getStatusCode() != HttpStatus.OK) {
+            throw new RegraDeNegocioException("O cartão de crédito fornecido é inválido ou não pôde ser verificado.");
+        }
+        
     }
 
     private void verificaDadosDuplicados(CiclistaRequestDTO novoCiclista){
@@ -362,5 +442,26 @@ public class AluguelService {
 
                 throw new RegraDeNegocioException("Este Passaporte já está em uso.");
         }
+    }
+
+    private BigDecimal calcularValorExcedente(LocalDateTime inicio, LocalDateTime fim) {
+
+        Duration duracaoTotal = Duration.between(inicio, fim);
+
+        long minutosTotais = duracaoTotal.toMinutes();
+
+        final long LIMITE_MINUTOS_SEM_COBRANCA = 120;
+
+        if (minutosTotais <= LIMITE_MINUTOS_SEM_COBRANCA) {
+            return BigDecimal.ZERO;
+        }
+
+        long minutosExcedentes = minutosTotais - LIMITE_MINUTOS_SEM_COBRANCA;
+
+        long blocosDe30Min = minutosExcedentes / 30;
+
+        BigDecimal valorPorBloco = new BigDecimal("5.00");
+
+        return valorPorBloco.multiply(new BigDecimal(blocosDe30Min));
     }
 }
