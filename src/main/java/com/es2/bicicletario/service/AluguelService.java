@@ -85,12 +85,17 @@ public class AluguelService {
 
         Ciclista ciclistaSalvo = ciclistaRepository.save(ciclista);
 
+        emailService.enviaEmail("joao.p.nv@edu.unirio.br", "Ciclista criado", "Seu ciclista: " + ciclista.toString() + "foi criado com sucesso!");
+
         return CiclistaResponseDTO.fromEntity(ciclistaSalvo);
     }
 
     @Transactional
     public CiclistaResponseDTO atualizarCiclista(Integer idCiclista, CiclistaRequestDTO ciclistaRequestDTO) {
         Ciclista ciclista = converteParaCiclista(ciclistaRepository.findById(idCiclista));
+
+        this.verificaDadosCiclista(ciclistaRequestDTO);
+        this.verificaDadosDuplicados(ciclistaRequestDTO);
 
         // Atualiza os campos do ciclista com os dados do DTO
         ciclista.setNomeCiclista(ciclistaRequestDTO.getNomeCiclista());
