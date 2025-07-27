@@ -51,11 +51,11 @@ class AluguelControllerTest {
     private static final String SENHA_TESTE = "senha123";
     private static final String SENHA_NOVA = "senhaForte123";
     private static final String NUMERO_CARTAO_TESTE = "1111222233334444";
-    private static final String CARTAO_MASCARADO_TESTE = "************4444";
     private static final String CVV_TESTE = "123";
     private static final LocalDate DATA_NASCIMENTO_TESTE = LocalDate.of(2000, 1, 1);
     private static final Integer CICLISTA_ID_TESTE = 1;
-    private static final String NOME_CAMPO_JSON = "$.nome";
+    private static final String NOME_CAMPO_JSON = "$.nomeCiclista";
+    private static final String NOME_CAMPO_JSON_FUNC = "$.nome";
     private static final String MATRICULA_CAMPO_JSON = "$.matricula";
     private static final String NOME_ATUALIZADO = "Jorge Aragão";
     private static final String EMAIL_ATUALIZADO = "novo.email@teste.com";
@@ -99,22 +99,25 @@ class AluguelControllerTest {
         ciclistaRequestDTO.setSenha(SENHA_TESTE);
         ciclistaRequestDTO.setConfirmacaoSenha(SENHA_TESTE);
         
-        CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
-        cartaoDto.setNomeTitular(NOME_TESTE);
-        cartaoDto.setNumero(NUMERO_CARTAO_TESTE);
-        cartaoDto.setValidade(YearMonth.now().plusYears(1));
-        cartaoDto.setCvv(CVV_TESTE);
-        ciclistaRequestDTO.setCartaoDeCredito(cartaoDto);
+        CiclistaRequestDTO.CartaoDeCreditoDto cartaoRequestDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
+        cartaoRequestDto.setNomeTitular(NOME_TESTE);
+        cartaoRequestDto.setNumero(NUMERO_CARTAO_TESTE);
+        cartaoRequestDto.setValidade(YearMonth.now().plusYears(1));
+        cartaoRequestDto.setCvv(CVV_TESTE);
+        ciclistaRequestDTO.setCartaoDeCredito(cartaoRequestDto);
 
         ciclistaResponseDTO = new CiclistaResponseDTO();
         ciclistaResponseDTO.setId(CICLISTA_ID_TESTE);
-        ciclistaResponseDTO.setNome(NOME_TESTE);
+        ciclistaResponseDTO.setNomeCiclista(NOME_TESTE);
         ciclistaResponseDTO.setEmail(EMAIL_TESTE);
         ciclistaResponseDTO.setStatus(Status.AGUARDANDO_ATIVAMENTO);
         ciclistaResponseDTO.setNacionalidade(Nacionalidade.BRASILEIRO);
         ciclistaResponseDTO.setCpf(CPF_TESTE);
-        ciclistaResponseDTO.setNomeTitularCartao(NOME_TESTE);
-        ciclistaResponseDTO.setNumeroCartaoMascarado(CARTAO_MASCARADO_TESTE);
+        
+        CiclistaResponseDTO.CartaoDeCreditoDto cartaoResponseDto = new CiclistaResponseDTO.CartaoDeCreditoDto();
+        cartaoResponseDto.setNomeTitular(NOME_TESTE);
+        cartaoResponseDto.setNumero(NUMERO_CARTAO_TESTE);
+        ciclistaResponseDTO.setCartaoDeCredito(cartaoResponseDto);
     }
     
     @Test
@@ -243,7 +246,7 @@ class AluguelControllerTest {
         void atualizarCiclista_ComDadosValidos_DeveRetornarStatus200Ok() throws Exception {
             CiclistaResponseDTO ciclistaAtualizadoResponse = new CiclistaResponseDTO();
             ciclistaAtualizadoResponse.setId(CICLISTA_ID_TESTE);
-            ciclistaAtualizadoResponse.setNome(NOME_ATUALIZADO);
+            ciclistaAtualizadoResponse.setNomeCiclista(NOME_ATUALIZADO);
             ciclistaAtualizadoResponse.setEmail(EMAIL_ATUALIZADO);
 
             given(aluguelService.atualizarCiclista(eq(CICLISTA_ID_TESTE), any(CiclistaRequestDTO.class)))
@@ -435,7 +438,7 @@ class AluguelControllerTest {
             mockMvc.perform(get(CAMINHO_BUSCA_FUNC, matricula))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(MATRICULA_CAMPO_JSON).value(matricula))
-                .andExpect(jsonPath(NOME_CAMPO_JSON ).value("Funcionario Teste"));
+                .andExpect(jsonPath(NOME_CAMPO_JSON_FUNC ).value("Funcionario Teste"));
         }
 
         @Test
@@ -479,7 +482,7 @@ class AluguelControllerTest {
                     .content(objectMapper.writeValueAsString(funcionarioRequestDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(MATRICULA_CAMPO_JSON).value(matricula))
-                .andExpect(jsonPath(NOME_CAMPO_JSON ).value(NOME_ATUALIZADO));
+                .andExpect(jsonPath(NOME_CAMPO_JSON_FUNC).value(NOME_ATUALIZADO));
         }
 
         @Test
@@ -536,7 +539,7 @@ class AluguelControllerTest {
                     .content(objectMapper.writeValueAsString(novoFuncionario)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath(MATRICULA_CAMPO_JSON).value("F789"))
-                .andExpect(jsonPath(NOME_CAMPO_JSON ).value("Funcionario Novo"));
+                .andExpect(jsonPath(NOME_CAMPO_JSON_FUNC).value("Funcionario Novo"));
         }
 
         @Test

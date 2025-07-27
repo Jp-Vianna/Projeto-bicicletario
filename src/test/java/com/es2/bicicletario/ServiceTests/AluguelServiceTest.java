@@ -91,7 +91,7 @@ class AluguelServiceTest {
         CiclistaResponseDTO response = aluguelService.criarCiclista(ciclistaRequestDTO);
 
         assertThat(response).isNotNull();
-        assertThat(response.getNome()).isEqualTo(NOME_TESTE);
+        assertThat(response.getNomeCiclista()).isEqualTo(NOME_TESTE);
         assertThat(response.getEmail()).isEqualTo(EMAIL_TESTE);
     }
 
