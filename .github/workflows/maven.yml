@@ -47,6 +47,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Provided by Actions
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # Must be created in SonarCloud
+          MICROSERVICO_EXTERNO: ${{ secrets.MICROSERVICO_EXTERNO }}
+          MICROSERVICO_EQUIPAMENTO: ${{ secrets.MICROSERVICO_EQUIPAMENTO }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_USER: ${{ secrets.DATABASE_USER }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
 
       # 6. Update GitHub's dependency graph
       - name: Update dependency graph
