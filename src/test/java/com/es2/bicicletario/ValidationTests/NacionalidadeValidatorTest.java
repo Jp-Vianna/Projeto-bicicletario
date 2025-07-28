@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +44,13 @@ class NacionalidadeValidatorTest {
         CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
         cartaoDto.setNomeTitular("Titular Cartao");
         cartaoDto.setNumero("1111222233334444");
-        cartaoDto.setValidade(YearMonth.now().plusYears(1));
+        YearMonth validadeAnoMes = YearMonth.now().plusYears(1);
+
+        LocalDate ultimoDiaDoMes = validadeAnoMes.atEndOfMonth();
+
+        Date dataValidade = Date.from(ultimoDiaDoMes.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        cartaoDto.setValidade(dataValidade);
         cartaoDto.setCvv("123");
         ciclistaRequestDTO.setCartaoDeCredito(cartaoDto);
     }

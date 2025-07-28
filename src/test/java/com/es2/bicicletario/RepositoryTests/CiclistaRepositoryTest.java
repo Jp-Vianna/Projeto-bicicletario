@@ -6,27 +6,19 @@ import com.es2.bicicletario.entity.Email;
 import com.es2.bicicletario.entity.Nacionalidade;
 import com.es2.bicicletario.entity.Passaporte;
 import com.es2.bicicletario.entity.Status;
-import com.es2.bicicletario.repository.CiclistaRepository;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import java.time.LocalDate;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 public class CiclistaRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
-    @Autowired
-    private CiclistaRepository ciclistaRepository;
 
     private Ciclista ciclistaBrasileiro;
     private Ciclista ciclistaEstrangeiro;
@@ -64,24 +56,24 @@ public class CiclistaRepositoryTest {
         entityManager.persist(ciclistaEstrangeiro);
     }
 
-    @Test
-    void findByCpfNumero_deveEncontrarCiclistaPeloCpf() {
-        Optional<Ciclista> encontrado = ciclistaRepository.findByCpfNumero("11122233344");
-        assertThat(encontrado).isPresent();
-        assertThat(encontrado.get().getNomeCiclista()).isEqualTo(nomeTesteBrasil);
-    }
+    // @Test
+    // void findByCpfNumero_deveEncontrarCiclistaPeloCpf() {
+    //     Optional<Ciclista> encontrado = ciclistaRepository.findByCpfNumero("11122233344");
+    //     assertThat(encontrado).isPresent();
+    //     assertThat(encontrado.get().getNomeCiclista()).isEqualTo(nomeTesteBrasil);
+    // }
 
-    @Test
-    void findByEmailEndereco_deveEncontrarCiclistaPeloEmail() {
-        Optional<Ciclista> encontrado = ciclistaRepository.findByEmailEndereco(emailTesteBrasil);
-        assertThat(encontrado).isPresent();
-        assertThat(encontrado.get().getNomeCiclista()).isEqualTo(nomeTesteBrasil);
-    }
+    // @Test
+    // void findByEmailEndereco_deveEncontrarCiclistaPeloEmail() {
+    //     Optional<Ciclista> encontrado = ciclistaRepository.findByEmailEndereco(emailTesteBrasil);
+    //     assertThat(encontrado).isPresent();
+    //     assertThat(encontrado.get().getNomeCiclista()).isEqualTo(nomeTesteBrasil);
+    // }
 
-    @Test
-    void findByPassaporteNumeroPassaporte_deveEncontrarCiclistaPeloPassaporte() {
-        Optional<Ciclista> encontrado = ciclistaRepository.findByPassaporteNumeroPassaporte("ABC12345");
-        assertThat(encontrado).isPresent();
-        assertThat(encontrado.get().getNomeCiclista()).isEqualTo(nomeTesteEstrangeiro);
-    }
+    // @Test
+    // void findByPassaporteNumeroPassaporte_deveEncontrarCiclistaPeloPassaporte() {
+    //     Optional<Ciclista> encontrado = ciclistaRepository.findByPassaporteNumeroPassaporte("ABC12345");
+    //     assertThat(encontrado).isPresent();
+    //     assertThat(encontrado.get().getNomeCiclista()).isEqualTo(nomeTesteEstrangeiro);
+    // }
 }

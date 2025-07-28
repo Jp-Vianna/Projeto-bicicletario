@@ -5,12 +5,12 @@ import java.math.BigDecimal;
 public class CobrancaRequestDTO {
 
     private BigDecimal valor;
-    private Integer ciclista;
+    private String ciclista;
 
     public CobrancaRequestDTO() {
     }
 
-    public CobrancaRequestDTO(BigDecimal valor, Integer ciclista) {
+    public CobrancaRequestDTO(BigDecimal valor, String ciclista) {
         this.valor = valor;
         this.ciclista = ciclista;
     }
@@ -23,11 +23,11 @@ public class CobrancaRequestDTO {
         this.valor = valor;
     }
 
-    public Integer getCiclista() {
+    public String getCiclista() {
         return ciclista;
     }
 
-    public void setCiclista(Integer ciclista) {
+    public void setCiclista(String ciclista) {
         this.ciclista = ciclista;
     }
 

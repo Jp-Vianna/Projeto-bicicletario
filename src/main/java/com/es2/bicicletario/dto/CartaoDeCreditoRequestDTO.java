@@ -1,17 +1,16 @@
 package com.es2.bicicletario.dto;
-import java.time.YearMonth;
 
 public class CartaoDeCreditoRequestDTO {
 
     private String nomeTitular;
     private String numero;
-    private YearMonth validade;
+    private String validade;
     private String cvv;
 
     public CartaoDeCreditoRequestDTO() {
     }
 
-    public CartaoDeCreditoRequestDTO(String nomeTitular, String numero, YearMonth validade, String cvv) {
+    public CartaoDeCreditoRequestDTO(String nomeTitular, String numero, String validade, String cvv) {
         this.nomeTitular = nomeTitular;
         this.numero = numero;
         this.validade = validade;
@@ -34,11 +33,11 @@ public class CartaoDeCreditoRequestDTO {
         this.numero = numero;
     }
 
-    public YearMonth getValidade() {
+    public String getValidade() {
         return validade;
     }
 
-    public void setValidade(YearMonth validade) {
+    public void setValidade(String validade) {
         this.validade = validade;
     }
 

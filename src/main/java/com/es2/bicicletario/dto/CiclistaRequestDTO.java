@@ -14,8 +14,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.Date;
 import java.time.LocalDate;
-import java.time.YearMonth;
 
 @Data
 @ValidNacionalidade
@@ -65,7 +65,7 @@ public class CiclistaRequestDTO {
 
         @NotNull(message = "A data de validade do cartão é obrigatória.")
         @Future(message = "O cartão de crédito está expirado.")
-        private YearMonth validade;
+        private Date validade;
 
         @NotBlank(message = "O CVV do cartão é obrigatório.")
         @Pattern(regexp = "\\d{3,4}", message = "O CVV deve ter 3 ou 4 dígitos.")

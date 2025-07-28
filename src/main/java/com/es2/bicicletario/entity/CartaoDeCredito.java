@@ -4,10 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.YearMonth;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Date;
 
 import jakarta.persistence.Embeddable;
 
@@ -22,14 +19,7 @@ public class CartaoDeCredito {
 
     private String numeroCartao;
     private String nomeNoCartao; 
-    private YearMonth validade; 
+    private Date validade; 
     private String codigoSeguranca; 
-    private static final Logger logger = LoggerFactory.getLogger(CartaoDeCredito.class);
 
-    public static boolean verificaCartao() { // Não integrado
-        
-        logger.warn("AVISO: Integração com API externa ainda não implementada. Usando comportamento FALSO de SUCESSO");
-        
-        return true;
-    }
 }

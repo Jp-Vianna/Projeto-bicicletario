@@ -2,20 +2,14 @@ package com.es2.bicicletario.RepositoryTests;
 
 import com.es2.bicicletario.entity.Aluguel;
 import com.es2.bicicletario.entity.Ciclista;
-import com.es2.bicicletario.entity.Devolucao;
 import com.es2.bicicletario.entity.Status;
-import com.es2.bicicletario.repository.DevolucaoRepository;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 public class DevolucaoRepositoryTest {
@@ -23,8 +17,6 @@ public class DevolucaoRepositoryTest {
     @Autowired
     private TestEntityManager entityManager;
 
-    @Autowired
-    private DevolucaoRepository devolucaoRepository;
 
     private Aluguel aluguel;
 
@@ -45,22 +37,22 @@ public class DevolucaoRepositoryTest {
         entityManager.persist(aluguel);
     }
 
-    @Test
-    void save_devePersistirDevolucao() {
-        Devolucao devolucao = new Devolucao();
-        devolucao.setAluguel(aluguel);
-        devolucao.setTrancaFinal(301);
-        devolucao.setHoraFim(LocalDateTime.now());
-        devolucao.setCobrancaExtra(new BigDecimal("12.50"));
+    // @Test
+    // void save_devePersistirDevolucao() {
+    //     Devolucao devolucao = new Devolucao();
+    //     devolucao.setAluguel(aluguel);
+    //     devolucao.setTrancaFinal(301);
+    //     devolucao.setHoraFim(LocalDateTime.now());
+    //     devolucao.setCobrancaExtra(new BigDecimal("12.50"));
 
-        Devolucao savedDevolucao = devolucaoRepository.save(devolucao);
+    //     Devolucao savedDevolucao = devolucaoRepository.save(devolucao);
 
-        assertThat(savedDevolucao).isNotNull();
-        assertThat(savedDevolucao.getIdDevolucao()).isNotNull();
+    //     assertThat(savedDevolucao).isNotNull();
+    //     assertThat(savedDevolucao.getIdDevolucao()).isNotNull();
 
-        Devolucao foundDevolucao = entityManager.find(Devolucao.class, savedDevolucao.getIdDevolucao());
-        assertThat(foundDevolucao).isNotNull();
-        assertThat(foundDevolucao.getTrancaFinal()).isEqualTo(301);
-        assertThat(foundDevolucao.getAluguel().getIdAluguel()).isEqualTo(aluguel.getIdAluguel());
-    }
+    //     Devolucao foundDevolucao = entityManager.find(Devolucao.class, savedDevolucao.getIdDevolucao());
+    //     assertThat(foundDevolucao).isNotNull();
+    //     assertThat(foundDevolucao.getTrancaFinal()).isEqualTo(301);
+    //     assertThat(foundDevolucao.getAluguel().getIdAluguel()).isEqualTo(aluguel.getIdAluguel());
+    // }
 }

@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.es2.bicicletario.dto.AluguelRequestDTO;
 import com.es2.bicicletario.dto.AluguelResponseDTO;
+import com.es2.bicicletario.dto.BicicletaRespostaDTO;
 import com.es2.bicicletario.dto.CartaoDeCreditoRequestDTO;
 import com.es2.bicicletario.dto.CiclistaRequestDTO;
 import com.es2.bicicletario.dto.CiclistaResponseDTO;
@@ -22,15 +24,14 @@ import com.es2.bicicletario.dto.DevolucaoRequestDTO;
 import com.es2.bicicletario.dto.DevolucaoResponseDTO;
 import com.es2.bicicletario.dto.FuncionarioRequestDTO;
 import com.es2.bicicletario.dto.FuncionarioResponseDTO;
+import com.es2.bicicletario.dto.TrancaResponseDTO;
 import com.es2.bicicletario.entity.*;
 import com.es2.bicicletario.repository.*;
 import com.es2.bicicletario.validation.RegraDeNegocioException;
 
-import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @Service
-@RequiredArgsConstructor
 public class AluguelService {
 
     private final FuncionarioRepository funcionarioRepository;
@@ -38,7 +39,26 @@ public class AluguelService {
     private final AluguelRepository aluguelRepository;
     private final CiclistaRepository ciclistaRepository;
     private final EmailService emailService;
-    private final WebClient webClient;
+    private final WebClient apiExterno;
+    private final WebClient apiEquipamento;
+
+     public AluguelService(
+            FuncionarioRepository funcionarioRepository,
+            DevolucaoRepository devolucaoRepository,
+            AluguelRepository aluguelRepository,
+            CiclistaRepository ciclistaRepository,
+            EmailService emailService,
+            @Qualifier("apiExterno") WebClient apiExterno,
+            @Qualifier("apiEquipamentos") WebClient apiEquipamento
+    ) {
+        this.funcionarioRepository = funcionarioRepository;
+        this.devolucaoRepository = devolucaoRepository;
+        this.aluguelRepository = aluguelRepository;
+        this.ciclistaRepository = ciclistaRepository;
+        this.emailService = emailService;
+        this.apiExterno = apiExterno;
+        this.apiEquipamento = apiEquipamento;
+    }
 
     @Transactional
     public CiclistaResponseDTO criarCiclista(CiclistaRequestDTO novoCiclista) {
@@ -151,9 +171,35 @@ public class AluguelService {
         }
 
         CartaoDeCredito novoCartao = cartaoDeCreditoDto.toEntity();
+
+        CartaoDeCreditoRequestDTO cartaoDeCreditoRequestDTO = new CartaoDeCreditoRequestDTO();
+        cartaoDeCreditoRequestDTO.setCvv(cartaoDeCreditoDto.getCvv());
+        cartaoDeCreditoRequestDTO.setNomeTitular(cartaoDeCreditoDto.getNomeTitular());
+        cartaoDeCreditoRequestDTO.setNumero(cartaoDeCreditoDto.getNumero());
+        cartaoDeCreditoRequestDTO.setValidade(cartaoDeCreditoDto.getValidade().toString());
         
-        if (!CartaoDeCredito.verificaCartao()) {
-            throw new RegraDeNegocioException("O cartão de crédito informado é inválido.");
+        ResponseEntity<Void> responseValida;
+
+        try {
+            responseValida = apiExterno
+                .post()
+                .uri("/verifyCard/validaCartaoDeCredito")
+                .bodyValue(cartaoDeCreditoRequestDTO)
+                .retrieve()
+                .onStatus(
+                    status -> status.isError(),
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RegraDeNegocioException("API de validação retornou erro: " + errorBody)))
+                )
+                .toBodilessEntity()
+                .block();
+
+        } catch (Exception ex) {
+            throw new RuntimeException("Não foi possível se comunicar com o serviço de validação de cartão.", ex);
+        }
+
+        if (responseValida == null || responseValida.getStatusCode() != HttpStatus.OK) {
+            throw new RegraDeNegocioException("O cartão de crédito fornecido é inválido ou não pôde ser verificado.");
         }
 
         ciclista.setCartao(novoCartao);
@@ -241,10 +287,16 @@ public class AluguelService {
         List<Status> statusDesejados = List.of(Status.EM_ANDAMENTO, Status.FINALIZADO_COM_COBRANCA_PENDENTE);
         List<Aluguel> alugueis = aluguelRepository.findAllByCiclistaIdAndStatusIn(ciclista.getId(), statusDesejados);
 
+        if (!alugueis.isEmpty()) {
+            emailService.enviaEmail(alugueis.get(0).getCiclista().getEmail().getEndereco(), "Já possui aluguel",
+                                     "Dados do aluguel ativo:" + alugueis.get(0).toString());
+        }
+
         return alugueis.isEmpty() && ciclista.getStatus().equals(Status.ATIVO);
     }
 
-    public Integer getBicicletaAlugada(Integer idCiclista) { // Ainda falta integrar
+    public Integer getBicicletaAlugada(Integer idCiclista) {
+
         Optional<Aluguel> optionalAluguel = aluguelRepository.findByCiclistaIdAndStatus(idCiclista, Status.EM_ANDAMENTO);
         Aluguel aluguel = optionalAluguel.orElseThrow(() -> new RuntimeException("O ciclista não tem aluguéis no momento."));
 
@@ -252,33 +304,76 @@ public class AluguelService {
             return null;
         }
 
-        return aluguel.getIdBicicleta();
+        BicicletaRespostaDTO bicicleta;
+
+        try {
+            bicicleta =  apiEquipamento
+                .get() 
+                .uri("bicicleta/{id}", aluguel.getIdBicicleta())
+                .retrieve()
+                .onStatus(
+                    status -> status.isError(),
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("API retornou erro: " + errorBody)))
+                )
+                .bodyToMono(BicicletaRespostaDTO.class)
+                .block();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Comunicação com o serviço de bicicletas falhou.", e);
+        }
+
+        return bicicleta.getId();
     }
 
     
     @Transactional
-    public AluguelResponseDTO realizarAluguel(AluguelRequestDTO novoAluguel) { // Integrar com trancas e bikes futuramente
+    public AluguelResponseDTO realizarAluguel(AluguelRequestDTO novoAluguel) {
         
         Ciclista ciclista = converteParaCiclista(ciclistaRepository.findById(novoAluguel.getIdCiclista()));
 
         if (!permiteAluguel(ciclista.getId())) {
             throw new RegraDeNegocioException("O aluguel não foi autorizado.");
-        }       
+        } 
 
         Aluguel aluguel = new Aluguel();
+        
+        try {
+            BicicletaRespostaDTO bicicletaResposta = apiEquipamento
+                .get()
+                .uri("/tranca/{idTranca}/bicicleta", novoAluguel.getIdTranca())
+                .retrieve()
+                .onStatus(
+                    status -> status.is4xxClientError() || status.is5xxServerError(),
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("API retornou erro: " + errorBody)))
+                )
+                .bodyToMono(BicicletaRespostaDTO.class)
+                .block();
+                
+            if (bicicletaResposta != null) {
+                aluguel.setIdBicicleta(bicicletaResposta.getId());
+            }else{
+                throw new RuntimeException("Nenhuma bicicleta encontrada para a tranca informada.");
+            }
+
+         } catch (Exception e) {
+              e.printStackTrace(); 
+            throw new RuntimeException("Comunicação com o serviço de trancas falhou.wewe", e);
+         }
 
         aluguel.setTrancaInicial(novoAluguel.getIdTranca());
         aluguel.setCiclista(ciclista);
         aluguel.setHoraInicio(LocalDateTime.now());
-        aluguel.setIdBicicleta(10001);
+        
         aluguel.setStatus(Status.EM_ANDAMENTO);
 
         CobrancaRequestDTO cobrancaRequestDTO = new CobrancaRequestDTO();
         cobrancaRequestDTO.setValor(new BigDecimal("10.00"));
-        cobrancaRequestDTO.setCiclista(ciclista.getId());
+        cobrancaRequestDTO.setCiclista(ciclista.getId().toString());
 
         try {
-                webClient
+                apiExterno
                     .post()
                     .uri("/payment/cobranca")
                     .bodyValue(cobrancaRequestDTO)
@@ -288,20 +383,52 @@ public class AluguelService {
                         response -> response.bodyToMono(String.class)
                             .flatMap(errorBody -> Mono.error(new RuntimeException("Falha na API externa. Status: " + response.statusCode() + ". Body: " + errorBody)))
                     )
-                    .bodyToMono(CobrancaResponseDTO.class)
+                    .bodyToMono(void.class)
                     .block();
 
                 emailService.enviaEmail(
                     "joao.p.nv@edu.unirio.br", "Pagamento efetuado.", "O pagamento padrão de 10,00 foi confirmado!");
 
             } catch (RuntimeException ex) {
-                throw new RuntimeException("Não foi possível concluir pagamento.");
+                ex.printStackTrace();
+                throw new RuntimeException("Não foi possível concluir pagamento.", ex);
             }
 
         Aluguel aluguelSalvo = aluguelRepository.save(aluguel);
 
-        
-        Tranca.destravaTranca();
+        try {
+            apiEquipamento
+                .post() 
+                .uri("/bicicleta/{idBicicleta}/status/{acao}", aluguel.getIdBicicleta(), StatusBicicleta.EM_USO)
+                .retrieve()
+                .onStatus(
+                    status -> status.isError(),
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("API retornou erro: " + errorBody)))
+                )
+                .bodyToMono(BicicletaRespostaDTO.class)
+                .block();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Comunicação com o serviço de bicicletas falhou.", e);
+        }
+
+        try {
+            apiEquipamento
+                .post() 
+                .uri("/tranca/{idTranca}/status/{acao}", aluguel.getTrancaInicial(), StatusTranca.LIVRE) 
+                .retrieve()
+                .onStatus(
+                    status -> status.isError(),
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("API retornou erro: " + errorBody)))
+                )
+                .bodyToMono(TrancaResponseDTO.class) 
+                .block();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Comunicação com o serviço de trancas falhou.", e);
+        }
 
         return AluguelResponseDTO.fromEntity(aluguelSalvo);
     }
@@ -326,7 +453,7 @@ public class AluguelService {
 
         CobrancaRequestDTO cobrancaRequestDTO = new CobrancaRequestDTO();
         cobrancaRequestDTO.setValor(valorExtra);
-        cobrancaRequestDTO.setCiclista(aluguel.getCiclista().getId());
+        cobrancaRequestDTO.setCiclista(aluguel.getCiclista().getId().toString());
 
         Devolucao devolucao = new Devolucao();
 
@@ -336,7 +463,7 @@ public class AluguelService {
             devolucao.setNumCartao(null);
         }else{
             try {
-                CobrancaResponseDTO respostaApi = webClient
+                CobrancaResponseDTO respostaApi = apiExterno
                     .post()
                     .uri("/payment/cobranca")
                     .bodyValue(cobrancaRequestDTO)
@@ -359,7 +486,6 @@ public class AluguelService {
             } catch (RuntimeException ex) {
                 throw new RuntimeException("Não foi possível concluir pagamento.");
             }
-            
         }
 
         devolucao.setTrancaFinal(novaDevolucao.getIdTranca());
@@ -373,13 +499,46 @@ public class AluguelService {
         
         Devolucao devolucaoCriado = devolucaoRepository.save(devolucao);
 
-        Tranca.travarTranca(); // Integrar
+        try {
+            apiEquipamento
+                .post() 
+                .uri("/tranca/{idTranca}/status/{acao}", novaDevolucao.getIdTranca(), StatusTranca.OCUPADA) 
+                .retrieve()
+                .onStatus(
+                    status -> status.isError(),
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("API retornou erro: " + errorBody)))
+                )
+                .bodyToMono(TrancaResponseDTO.class) 
+                .block();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Comunicação com o serviço de trancas falhou.", e);
+        }
+
+        try {
+            apiEquipamento
+                .post() 
+                .uri("/bicicleta/{idBicicleta}/status/{acao}", aluguel.getIdBicicleta(), StatusBicicleta.DISPONIVEL)
+                .retrieve()
+                .onStatus(
+                    status -> status.isError(),
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("API retornou erro: " + errorBody)))
+                )
+                .bodyToMono(BicicletaRespostaDTO.class)
+                .block();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Comunicação com o serviço de bicicletas falhou.", e);
+        }
 
         return DevolucaoResponseDTO.fromEntity(devolucaoCriado);
     }
 
 
     // Métodos de utilidade
+
 
     private Ciclista converteParaCiclista(Optional<Ciclista> optionalCiclista){
         return optionalCiclista.orElseThrow(() -> new RuntimeException("Ciclista não encontrado."));
@@ -403,12 +562,12 @@ public class AluguelService {
         cartaoDeCreditoRequestDTO.setCvv(novoCiclista.getCartaoDeCredito().getCvv());
         cartaoDeCreditoRequestDTO.setNomeTitular(novoCiclista.getCartaoDeCredito().getNomeTitular());
         cartaoDeCreditoRequestDTO.setNumero(novoCiclista.getCartaoDeCredito().getNumero());
-        cartaoDeCreditoRequestDTO.setValidade(novoCiclista.getCartaoDeCredito().getValidade());
+        cartaoDeCreditoRequestDTO.setValidade(novoCiclista.getCartaoDeCredito().getValidade().toString());
 
         ResponseEntity<Void> responseValida;
 
         try {
-            responseValida = webClient
+            responseValida = apiExterno
                 .post()
                 .uri("/verifyCard/validaCartaoDeCredito")
                 .bodyValue(cartaoDeCreditoRequestDTO)

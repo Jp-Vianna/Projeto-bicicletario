@@ -6,6 +6,9 @@ import com.es2.bicicletario.entity.*;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
+import java.util.Date;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class CiclistaTest {
@@ -15,10 +18,16 @@ class CiclistaTest {
 
         Cpf cpf = new Cpf("12345678909");
         Email email = new Email("ciclista@teste.com");
+        YearMonth validadeAnoMes = YearMonth.now().plusYears(1);
+
+        LocalDate ultimoDiaDoMes = validadeAnoMes.atEndOfMonth();
+
+        Date dataValidade = Date.from(ultimoDiaDoMes.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
         CartaoDeCredito cartao = new CartaoDeCredito(
             "1111222233334444", 
             "Ciclista Teste", 
-            YearMonth.of(2028, 12), 
+            dataValidade, 
             "123"
         );
 
@@ -52,7 +61,13 @@ class CiclistaTest {
     void deveUsarConstrutorComTodosOsArgumentos() {
 
         Email email = new Email("outro@email.com");
-        CartaoDeCredito cartao = new CartaoDeCredito("5555666677778888", "Outro Titular", YearMonth.of(2029, 1), "456");
+        YearMonth validadeAnoMes = YearMonth.now().plusYears(1);
+
+        LocalDate ultimoDiaDoMes = validadeAnoMes.atEndOfMonth();
+
+        Date dataValidade = Date.from(ultimoDiaDoMes.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        CartaoDeCredito cartao = new CartaoDeCredito("5555666677778888", "Outro Titular", dataValidade, "456");
         Passaporte passaporte = new Passaporte("XYZ987", LocalDate.now().plusYears(5), "ESTADOS UNIDOS");
 
         Ciclista ciclista = new Ciclista(

@@ -6,7 +6,6 @@ import com.es2.bicicletario.entity.Status;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.YearMonth;
 
 @Data
 public class CiclistaResponseDTO {
@@ -28,7 +27,7 @@ public class CiclistaResponseDTO {
     public static class CartaoDeCreditoDto {
         private String nomeTitular;
         private String numero;
-        private YearMonth validade;
+        private String validade;
         private String cvv;
     }
 
@@ -62,7 +61,7 @@ public class CiclistaResponseDTO {
             CartaoDeCreditoDto cartaoDto = new CartaoDeCreditoDto();
             cartaoDto.setNomeTitular(ciclista.getCartao().getNomeNoCartao());
             cartaoDto.setNumero(ciclista.getCartao().getNumeroCartao());
-            cartaoDto.setValidade(ciclista.getCartao().getValidade());
+            cartaoDto.setValidade(ciclista.getCartao().getValidade().toString());
             cartaoDto.setCvv(ciclista.getCartao().getCodigoSeguranca()); 
             response.setCartaoDeCredito(cartaoDto);
         }

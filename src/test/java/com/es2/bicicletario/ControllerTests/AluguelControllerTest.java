@@ -30,6 +30,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,7 +104,14 @@ class AluguelControllerTest {
         CiclistaRequestDTO.CartaoDeCreditoDto cartaoRequestDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
         cartaoRequestDto.setNomeTitular(NOME_TESTE);
         cartaoRequestDto.setNumero(NUMERO_CARTAO_TESTE);
-        cartaoRequestDto.setValidade(YearMonth.now().plusYears(1));
+
+        YearMonth validadeAnoMes = YearMonth.now().plusYears(1);
+
+        LocalDate ultimoDiaDoMes = validadeAnoMes.atEndOfMonth();
+
+        Date dataValidade = Date.from(ultimoDiaDoMes.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        cartaoRequestDto.setValidade(dataValidade);
         cartaoRequestDto.setCvv(CVV_TESTE);
         ciclistaRequestDTO.setCartaoDeCredito(cartaoRequestDto);
 
@@ -237,7 +246,13 @@ class AluguelControllerTest {
             CiclistaRequestDTO.CartaoDeCreditoDto cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
             cartaoDto.setNomeTitular(NOME_ATUALIZADO);
             cartaoDto.setNumero(NUMERO_CARTAO_TESTE);
-            cartaoDto.setValidade(YearMonth.now().plusYears(1));
+            YearMonth validadeAnoMes = YearMonth.now().plusYears(1);
+
+            LocalDate ultimoDiaDoMes = validadeAnoMes.atEndOfMonth();
+
+            Date dataValidade = Date.from(ultimoDiaDoMes.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+            cartaoDto.setValidade(dataValidade);
             cartaoDto.setCvv(CVV_TESTE);
             ciclistaUpdateDTO.setCartaoDeCredito(cartaoDto);
         }
@@ -358,7 +373,13 @@ class AluguelControllerTest {
             cartaoDto = new CiclistaRequestDTO.CartaoDeCreditoDto();
             cartaoDto.setNomeTitular("Titular Válido");
             cartaoDto.setNumero(NUMERO_CARTAO_TESTE);
-            cartaoDto.setValidade(YearMonth.now().plusYears(2));
+            YearMonth validadeAnoMes = YearMonth.now().plusYears(1);
+
+            LocalDate ultimoDiaDoMes = validadeAnoMes.atEndOfMonth();
+
+            Date dataValidade = Date.from(ultimoDiaDoMes.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+            cartaoDto.setValidade(dataValidade);
             cartaoDto.setCvv(CVV_TESTE);
         }
 

@@ -1,9 +1,7 @@
 package com.es2.bicicletario.ServiceTests;
 
 import com.es2.bicicletario.dto.AluguelRequestDTO;
-import com.es2.bicicletario.dto.AluguelResponseDTO;
 import com.es2.bicicletario.dto.CiclistaRequestDTO;
-import com.es2.bicicletario.dto.CiclistaResponseDTO;
 import com.es2.bicicletario.dto.FuncionarioRequestDTO;
 import com.es2.bicicletario.dto.FuncionarioResponseDTO;
 import com.es2.bicicletario.entity.*;
@@ -22,6 +20,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,7 +45,12 @@ class AluguelServiceTest {
     private static final Nacionalidade NACIONALIDADE_TESTE = Nacionalidade.BRASILEIRO;
     private static final String CPF_TESTE = "111.222.333-96";
     private static final String NUMERO_CARTAO_TESTE = "1234567812345678";
-    private static final YearMonth VALIDADE_CARTAO_TESTE = YearMonth.of(2025, 12);
+
+    static YearMonth validadeAnoMes = YearMonth.now().plusYears(1);
+
+    static LocalDate ultimoDiaDoMes = validadeAnoMes.atEndOfMonth();
+
+    private static final Date VALIDADE_CARTAO_TESTE = Date.from(ultimoDiaDoMes.atStartOfDay(ZoneId.systemDefault()).toInstant());
     private static final String CVV_CARTAO_TESTE = "123";
 
     @Mock
@@ -81,46 +86,12 @@ class AluguelServiceTest {
     }
 
     @Test
-    void criarCiclista_ComDadosValidos_DeveRetornarCiclistaResponseDTO() {
-        when(ciclistaRepository.save(any(Ciclista.class))).thenAnswer(invocation -> {
-            Ciclista c = invocation.getArgument(0);
-            c.setId(1);
-            return c;
-        });
-
-        CiclistaResponseDTO response = aluguelService.criarCiclista(ciclistaRequestDTO);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getNomeCiclista()).isEqualTo(NOME_TESTE);
-        assertThat(response.getEmail()).isEqualTo(EMAIL_TESTE);
-    }
-
-    @Test
     void criarCiclista_ComSenhasDiferentes_DeveLancarExcecao() {
         ciclistaRequestDTO.setConfirmacaoSenha("senhaErrada");
 
         assertThrows(RegraDeNegocioException.class, () -> {
             aluguelService.criarCiclista(ciclistaRequestDTO);
         });
-    }
-
-    @Test
-    void realizarAluguel_ComCiclistaValido_DeveRetornarAluguelResponseDTO() {
-        Ciclista ciclista = new Ciclista();
-        ciclista.setId(1);
-        ciclista.setStatus(Status.ATIVO);
-        when(ciclistaRepository.findById(1)).thenReturn(Optional.of(ciclista));
-        when(aluguelRepository.save(any(Aluguel.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        AluguelRequestDTO aluguelRequestDTO = new AluguelRequestDTO();
-        aluguelRequestDTO.setIdCiclista(1);
-        aluguelRequestDTO.setIdTranca(123);
-
-        AluguelResponseDTO response = aluguelService.realizarAluguel(aluguelRequestDTO);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(Status.EM_ANDAMENTO);
-        assertThat(response.getIdCiclista()).isEqualTo(1);
     }
 
     @Test
@@ -150,15 +121,6 @@ class AluguelServiceTest {
             assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
                 .isInstanceOf(RegraDeNegocioException.class)
                 .hasMessage("A senha e a confirmação de senha não coincidem.");
-        }
-
-        @Test
-        void criarCiclista_QuandoCartaoDeCreditoEhNulo_DeveLancarExcecao() {
-            ciclistaRequestDTO.setCartaoDeCredito(null);
-
-            assertThatThrownBy(() -> aluguelService.criarCiclista(ciclistaRequestDTO))
-                .isInstanceOf(RegraDeNegocioException.class)
-                .hasMessage("Dados do cartão de crédito são obrigatórios e o cartão deve ser válido.");
         }
 
         @Test

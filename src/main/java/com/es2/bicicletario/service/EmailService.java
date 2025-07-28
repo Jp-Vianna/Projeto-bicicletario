@@ -1,26 +1,28 @@
 package com.es2.bicicletario.service;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.es2.bicicletario.dto.EmailRequestDTO;
-import com.es2.bicicletario.dto.EmailResponseDTO;
 
-import lombok.AllArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @Service
-@AllArgsConstructor
 public class EmailService {
 
-    private final WebClient webClient;
+    private final WebClient apiExterno;
 
-    public boolean enviaEmail(String email, String assunto, String mensagem){
+    public EmailService(@Qualifier("apiExterno") WebClient apiExterno) {
+        this.apiExterno = apiExterno;
+    }
+
+    public void enviaEmail(String email, String assunto, String mensagem) {
 
         EmailRequestDTO emailRequest = new EmailRequestDTO(email, assunto, mensagem);
 
         try {
-            webClient
+            apiExterno
                 .post()
                 .uri("/email/enviarEmail")
                 .bodyValue(emailRequest)
@@ -28,15 +30,13 @@ public class EmailService {
                 .onStatus(
                     status -> status.isError(),
                     response -> response.bodyToMono(String.class)
-                        .flatMap(errorBody -> Mono.error(new RuntimeException("Falha na API. Status: " + response.statusCode() + ". Resposta: " + errorBody)))
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("Falha na API: " + errorBody)))
                 )
-                .bodyToMono(EmailResponseDTO.class)
+                .bodyToMono(Void.class)
                 .block();
-            
-            return true;
 
         } catch (Exception e) {
-            return false;
+            throw new RuntimeException("Não foi possível enviar o e-mail para " + email, e);
         }
     }
 }
