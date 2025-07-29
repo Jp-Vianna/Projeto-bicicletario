@@ -399,7 +399,7 @@ public class AluguelService {
         try {
             apiEquipamento
                 .post() 
-                .uri("/bicicleta/{idBicicleta}/status/{acao}", aluguel.getIdBicicleta(), "em_uso")
+                .uri("/{idTranca}/destrancar", novoAluguel.getTrancaInicio())
                 .retrieve()
                 .onStatus(
                     status -> status.isError(),
@@ -411,23 +411,6 @@ public class AluguelService {
 
         } catch (Exception e) {
             throw new RuntimeException("Comunicação com o serviço de bicicletas falhou.", e);
-        }
-
-        try {
-            apiEquipamento
-                .post() 
-                .uri("/tranca/{idTranca}/status/{acao}", aluguel.getTrancaInicial(), "livre") 
-                .retrieve()
-                .onStatus(
-                    status -> status.isError(),
-                    response -> response.bodyToMono(String.class)
-                        .flatMap(errorBody -> Mono.error(new RuntimeException("API retornou erro: " + errorBody)))
-                )
-                .bodyToMono(TrancaResponseDTO.class) 
-                .block();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Comunicação com o serviço de trancas falhou.", e);
         }
 
         return AluguelResponseDTO.fromEntity(aluguelSalvo);
@@ -502,7 +485,7 @@ public class AluguelService {
         try {
             apiEquipamento
                 .post() 
-                .uri("/tranca/{idTranca}/status/{acao}", novaDevolucao.getIdTranca(), "ocupada") 
+                .uri("/{idTranca}/trancar", novaDevolucao.getIdTranca()) 
                 .retrieve()
                 .onStatus(
                     status -> status.isError(),
@@ -514,23 +497,6 @@ public class AluguelService {
 
         } catch (Exception e) {
             throw new RuntimeException("Comunicação com o serviço de trancas falhou.", e);
-        }
-
-        try {
-            apiEquipamento
-                .post() 
-                .uri("/bicicleta/{idBicicleta}/status/{acao}", aluguel.getIdBicicleta(), "disponivel")
-                .retrieve()
-                .onStatus(
-                    status -> status.isError(),
-                    response -> response.bodyToMono(String.class)
-                        .flatMap(errorBody -> Mono.error(new RuntimeException("API retornou erro: " + errorBody)))
-                )
-                .bodyToMono(BicicletaRespostaDTO.class)
-                .block();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Comunicação com o serviço de bicicletas falhou.", e);
         }
 
         return DevolucaoResponseDTO.fromEntity(devolucaoCriado);
