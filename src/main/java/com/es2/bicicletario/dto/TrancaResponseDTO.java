@@ -1,6 +1,5 @@
 package com.es2.bicicletario.dto;
 
-import com.es2.bicicletario.entity.StatusTranca;
 
 public class TrancaResponseDTO {
 
@@ -10,7 +9,7 @@ public class TrancaResponseDTO {
     private String localizacao;
     private String anoDeFabricacao;
     private String modelo;
-    private StatusTranca status;
+    private String status;
 
     // Construtor padrão (importante para desserialização)
     public TrancaResponseDTO() {
@@ -65,11 +64,11 @@ public class TrancaResponseDTO {
         this.modelo = modelo;
     }
 
-    public StatusTranca getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(StatusTranca status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

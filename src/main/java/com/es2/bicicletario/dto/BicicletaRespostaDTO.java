@@ -1,7 +1,5 @@
 package com.es2.bicicletario.dto;
 
-import com.es2.bicicletario.entity.StatusBicicleta;
-
 public class BicicletaRespostaDTO {
 
     private Integer id;
@@ -9,7 +7,7 @@ public class BicicletaRespostaDTO {
     private String modelo;
     private String ano;
     private Integer numero;
-    private StatusBicicleta status;
+    private String status;
 
     public BicicletaRespostaDTO() {
     }
@@ -54,11 +52,11 @@ public class BicicletaRespostaDTO {
         this.numero = numero;
     }
 
-    public StatusBicicleta getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(StatusBicicleta status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

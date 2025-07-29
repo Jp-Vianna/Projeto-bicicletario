@@ -102,8 +102,8 @@ class AluguelServiceTest {
         when(ciclistaRepository.findById(1)).thenReturn(Optional.of(ciclista));
 
         AluguelRequestDTO aluguelRequestDTO = new AluguelRequestDTO();
-        aluguelRequestDTO.setIdCiclista(1);
-        aluguelRequestDTO.setIdTranca(123);
+        aluguelRequestDTO.setCiclista("1");
+        aluguelRequestDTO.setTrancaInicio("123");
 
         assertThrows(RegraDeNegocioException.class, () -> {
             aluguelService.realizarAluguel(aluguelRequestDTO);

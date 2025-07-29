@@ -105,7 +105,7 @@ public class AluguelService {
 
         Ciclista ciclistaSalvo = ciclistaRepository.save(ciclista);
 
-        emailService.enviaEmail("joao.p.nv@edu.unirio.br", "Ciclista criado", "Seu ciclista: " + ciclista.toString() + "foi criado com sucesso!");
+        emailService.enviaEmail(ciclista.getEmail().getEndereco(), "Ciclista criado", "Seu ciclista: " + ciclista.toString() + "foi criado com sucesso!");
 
         return CiclistaResponseDTO.fromEntity(ciclistaSalvo);
     }
@@ -330,7 +330,7 @@ public class AluguelService {
     @Transactional
     public AluguelResponseDTO realizarAluguel(AluguelRequestDTO novoAluguel) {
         
-        Ciclista ciclista = converteParaCiclista(ciclistaRepository.findById(novoAluguel.getIdCiclista()));
+        Ciclista ciclista = converteParaCiclista(ciclistaRepository.findById(new Integer(novoAluguel.getCiclista())));
 
         if (!permiteAluguel(ciclista.getId())) {
             throw new RegraDeNegocioException("O aluguel não foi autorizado.");
@@ -341,7 +341,7 @@ public class AluguelService {
         try {
             BicicletaRespostaDTO bicicletaResposta = apiEquipamento
                 .get()
-                .uri("/tranca/{idTranca}/bicicleta", novoAluguel.getIdTranca())
+                .uri("/tranca/{idTranca}/bicicleta", new Integer(novoAluguel.getTrancaInicio()))
                 .retrieve()
                 .onStatus(
                     status -> status.is4xxClientError() || status.is5xxServerError(),
@@ -359,10 +359,10 @@ public class AluguelService {
 
          } catch (Exception e) {
               e.printStackTrace(); 
-            throw new RuntimeException("Comunicação com o serviço de trancas falhou.wewe", e);
+            throw new RuntimeException("Comunicação com o serviço de trancas falhou.", e);
          }
 
-        aluguel.setTrancaInicial(novoAluguel.getIdTranca());
+        aluguel.setTrancaInicial(new Integer(novoAluguel.getTrancaInicio()));
         aluguel.setCiclista(ciclista);
         aluguel.setHoraInicio(LocalDateTime.now());
         
@@ -387,7 +387,7 @@ public class AluguelService {
                     .block();
 
                 emailService.enviaEmail(
-                    "joao.p.nv@edu.unirio.br", "Pagamento efetuado.", "O pagamento padrão de 10,00 foi confirmado!");
+                    aluguel.getCiclista().getEmail().getEndereco(), "Pagamento efetuado.", "O pagamento padrão de 10,00 foi confirmado!");
 
             } catch (RuntimeException ex) {
                 ex.printStackTrace();
@@ -399,7 +399,7 @@ public class AluguelService {
         try {
             apiEquipamento
                 .post() 
-                .uri("/bicicleta/{idBicicleta}/status/{acao}", aluguel.getIdBicicleta(), StatusBicicleta.EM_USO)
+                .uri("/bicicleta/{idBicicleta}/status/{acao}", aluguel.getIdBicicleta(), "em_uso")
                 .retrieve()
                 .onStatus(
                     status -> status.isError(),
@@ -416,7 +416,7 @@ public class AluguelService {
         try {
             apiEquipamento
                 .post() 
-                .uri("/tranca/{idTranca}/status/{acao}", aluguel.getTrancaInicial(), StatusTranca.LIVRE) 
+                .uri("/tranca/{idTranca}/status/{acao}", aluguel.getTrancaInicial(), "livre") 
                 .retrieve()
                 .onStatus(
                     status -> status.isError(),
@@ -481,7 +481,7 @@ public class AluguelService {
                 devolucao.setHoraCobranca(respostaApi.getHoraFinalizacao());
 
                 emailService.enviaEmail(
-                    "joao.p.nv@edu.unirio.br", "Pagamento efetuado.", "O pagamento de " + valorExtra + "foi confirmado!");
+                    aluguel.getCiclista().getEmail().getEndereco(), "Pagamento efetuado.", "O pagamento de " + valorExtra + "foi confirmado!");
 
             } catch (RuntimeException ex) {
                 throw new RuntimeException("Não foi possível concluir pagamento.");
@@ -502,7 +502,7 @@ public class AluguelService {
         try {
             apiEquipamento
                 .post() 
-                .uri("/tranca/{idTranca}/status/{acao}", novaDevolucao.getIdTranca(), StatusTranca.OCUPADA) 
+                .uri("/tranca/{idTranca}/status/{acao}", novaDevolucao.getIdTranca(), "ocupada") 
                 .retrieve()
                 .onStatus(
                     status -> status.isError(),
@@ -519,7 +519,7 @@ public class AluguelService {
         try {
             apiEquipamento
                 .post() 
-                .uri("/bicicleta/{idBicicleta}/status/{acao}", aluguel.getIdBicicleta(), StatusBicicleta.DISPONIVEL)
+                .uri("/bicicleta/{idBicicleta}/status/{acao}", aluguel.getIdBicicleta(), "disponivel")
                 .retrieve()
                 .onStatus(
                     status -> status.isError(),

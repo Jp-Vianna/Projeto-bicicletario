@@ -11,7 +11,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api") 
 public class AluguelController {
 
     private final AluguelService service;
@@ -170,7 +169,7 @@ public class AluguelController {
      * @param aluguelRequestDTO DTO com os dados do aluguel.
      * @return Os dados do aluguel realizado com status 201 Created.
      */
-    @PostMapping("/alugueis")
+    @PostMapping("/aluguel")
     public ResponseEntity<AluguelResponseDTO> realizarAluguel(@Valid @RequestBody AluguelRequestDTO aluguelRequestDTO) {
         AluguelResponseDTO aluguelRealizado = service.realizarAluguel(aluguelRequestDTO);
         return new ResponseEntity<>(aluguelRealizado, HttpStatus.CREATED);
@@ -197,7 +196,7 @@ public class AluguelController {
      * @param devolucaoRequestDTO DTO com os dados da devolução.
      * @return Os dados da devolução realizada com status 201 Created.
      */
-    @PostMapping("/devolucoes")
+    @PostMapping("/devolucao")
     public ResponseEntity<DevolucaoResponseDTO> realizarDevolucao(@Valid @RequestBody DevolucaoRequestDTO devolucaoRequestDTO) {
   
         DevolucaoResponseDTO devolucaoRealizada = service.realizarDevolucao(devolucaoRequestDTO);

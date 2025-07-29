@@ -11,9 +11,9 @@ import lombok.Data;
 public class AluguelRequestDTO {
 
     @NotNull(message = "O ID da tranca é obrigatório.")
-    private Integer idTranca;
+    private String trancaInicio;
 
     @NotNull(message = "O ID do ciclista é obrigatório.")
-    private Integer idCiclista;
+    private String ciclista;
 
 }
